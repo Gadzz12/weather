@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Forecast & Analytics Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Outer canvas background with lilac/purple tone -->
+  <div class="dashboard-wrapper">
+    <div class="dashboard-card">
+
+      <!-- LEFT SIDEBAR -->
+      <aside class="sidebar">
+        <nav class="sidebar-nav">
+          <a href="#" class="nav-item active" data-tab="home" title="Home">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>Home</span>
+          </a>
+
+          <a href="#" class="nav-item" data-tab="forecast" title="Forecast">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+            </svg>
+            <span>Forecast</span>
+          </a>
+
+          <a href="#" class="nav-item" data-tab="locations" title="Locations">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span>Locations</span>
+          </a>
+
+          <a href="#" class="nav-item" data-tab="compare" title="Bandingkan 2 Kota" id="compareNavBtn">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="18" rx="1.5"></rect>
+              <rect x="14" y="3" width="7" height="18" rx="1.5"></rect>
+              <path d="M10 8l4 4-4 4"></path>
+            </svg>
+            <span>Compare</span>
+          </a>
+
+          <a href="#" class="nav-item" data-tab="analytics" title="Analytics">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+              <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+            </svg>
+            <span>Analytics</span>
+          </a>
+
+          <a href="#" class="nav-item" data-tab="calendar" title="Calendar" id="calendarNavBtn">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>Calendar</span>
+          </a>
+
+          <a href="#" class="nav-item" data-tab="settings" title="Settings" id="settingsNavBtn">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span>Settings</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- MAIN CONTENT AREA -->
+      <main class="main-content">
+
+        <!-- TOP BAR -->
+        <header class="top-bar">
+          <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search here..." autocomplete="off">
+            <button class="search-btn" id="searchSubmitBtn" title="Search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </button>
+            <div class="search-dropdown" id="searchDropdown"></div>
+          </div>
+
+          <div class="user-actions">
+            <!-- Quick Compare Button -->
+            <button class="header-compare-btn" id="headerCompareBtn" title="Bandingkan 2 Kota">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                <rect x="2" y="3" width="8" height="18" rx="2"></rect>
+                <rect x="14" y="3" width="8" height="18" rx="2"></rect>
+                <line x1="10" y1="9" x2="14" y2="9"></line>
+                <line x1="10" y1="15" x2="14" y2="15"></line>
+              </svg>
+              <span>Bandingkan Kota</span>
+            </button>
+
+            <!-- Quick Calendar Button -->
+            <button class="header-compare-btn header-calendar-btn" id="headerCalendarBtn" title="Kalender Cuaca Bulanan">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>Kalender Cuaca</span>
+            </button>
+
+            <!-- Notification Bell -->
+            <button class="action-icon-btn" title="Notifications">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+            </button>
+
+            <!-- User Outline -->
+            <button class="action-icon-btn" id="profileBtn" title="Account & Preferences">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </button>
+
+            <!-- Avatar -->
+            <div class="avatar-container" title="User Profile">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Avatar" class="user-avatar" id="avatarImg">
+            </div>
+          </div>
+        </header>
+
+        <!-- DASHBOARD BODY (2 COLUMNS) -->
+        <div class="dashboard-grid" id="dashboardGrid">
+
+          <!-- LEFT COLUMN -->
+          <section class="left-section">
+
+            <!-- Location Title -->
+            <div class="location-header">
+              <span class="location-label">Current Location</span>
+              <div class="location-title-row">
+                <h1 class="location-name" id="locationTitle">Los Angeles, CA, USA</h1>
+                <button class="gps-btn" id="gpsRefreshBtn" title="Current Location GPS">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="7"></circle>
+                    <line x1="12" y1="1" x2="12" y2="4"></line>
+                    <line x1="12" y1="20" x2="12" y2="23"></line>
+                    <line x1="1" y1="12" x2="4" y2="12"></line>
+                    <line x1="20" y1="12" x2="23" y2="12"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Hero Banner & Add City -->
+            <div class="hero-row">
+              <div class="weather-hero-card" id="weatherHeroCard">
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                  <div class="hero-left">
+                    <div class="weather-icon-badge" id="heroWeatherIcon">
+                      <svg class="weather-illustration" viewBox="0 0 64 64" fill="none">
+                        <circle cx="26" cy="24" r="10" fill="#f8b42c"></circle>
+                        <path d="M18 42h28a10 10 0 0 0 1.2-19.9 14 14 0 0 0-27.4 3.7A8 8 0 0 0 18 42z" fill="#ffffff" fill-opacity="0.95"></path>
+                        <circle cx="24" cy="48" r="1.5" fill="#ffffff"></circle>
+                        <circle cx="32" cy="48" r="1.5" fill="#ffffff"></circle>
+                        <circle cx="40" cy="48" r="1.5" fill="#ffffff"></circle>
+                      </svg>
+                    </div>
+                    <div class="temperature-wrap">
+                      <span class="temp-val" id="currentTemp">12</span>
+                      <span class="temp-deg" id="tempUnitLabel">°C</span>
+                    </div>
+                  </div>
+
+                  <div class="hero-right">
+                    <div class="hero-datetime" id="currentDateTime">Monday, 07:43 AM</div>
+                    <div class="hero-condition">
+                      <svg class="mini-cloud" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+                      </svg>
+                      <span id="currentCondition">Partly Cloudy</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Add City Card -->
+              <div class="add-city-card" id="addCityBtn" role="button" tabindex="0">
+                <div class="add-city-inner">
+                  <div class="plus-icon">+</div>
+                  <span class="add-city-text">Add City</span>
+                </div>
+              </div>
+
+              <!-- Quick Compare Card -->
+              <div class="add-city-card compare-hero-btn" id="heroCompareBtn" role="button" tabindex="0" title="Bandingkan 2 Kota">
+                <div class="add-city-inner">
+                  <div class="plus-icon" style="font-size: 18px;">⚖️</div>
+                  <span class="add-city-text">Compare</span>
+                </div>
+              </div>
+
+              <!-- Quick Calendar Card -->
+              <div class="add-city-card calendar-hero-btn" id="heroCalendarBtn" role="button" tabindex="0" title="Kalender Cuaca Bulanan">
+                <div class="add-city-inner">
+                  <div class="plus-icon" style="font-size: 18px;">📅</div>
+                  <span class="add-city-text">Calendar</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Today's Highlights -->
+            <div class="highlights-section">
+              <h2 class="section-title">Today's Highlights</h2>
+              <div class="highlights-grid">
+
+                <div class="highlight-card">
+                  <span class="highlight-label">Precipitation</span>
+                  <span class="highlight-value" id="highlightPrecip">2%</span>
+                </div>
+
+                <div class="highlight-card">
+                  <span class="highlight-label">Humidity</span>
+                  <span class="highlight-value" id="highlightHumidity">87%</span>
+                </div>
+
+                <div class="highlight-card">
+                  <span class="highlight-label">Wind</span>
+                  <span class="highlight-value" id="highlightWind">0 km/h</span>
+                </div>
+
+                <div class="highlight-card sun-card">
+                  <span class="highlight-label">Sunrise & Sunset</span>
+                  <div class="sun-times-row">
+                    <div class="sun-item">
+                      <span class="sun-icon up-sun">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <polyline points="18 15 12 9 6 15"></polyline>
+                        </svg>
+                      </span>
+                      <span class="sun-text" id="highlightSunrise">6:18 am</span>
+                    </div>
+
+                    <div class="sun-item">
+                      <span class="sun-icon down-sun">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                      </span>
+                      <span class="sun-text" id="highlightSunset">7:27 pm</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Hourly Temperature Chart -->
+            <div class="hourly-chart-section">
+              <div class="chart-header">
+                <div class="chart-tabs">
+                  <button class="tab-btn active" data-period="today">Today</button>
+                  <button class="tab-btn" data-period="week">Week</button>
+                </div>
+              </div>
+
+              <div class="chart-container">
+                <svg id="hourlyChartSvg" viewBox="0 0 540 110" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="#8c7cf0" stop-opacity="0.22"/>
+                      <stop offset="100%" stop-color="#8c7cf0" stop-opacity="0.0"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+
+                <div class="chart-time-labels" id="chartTimeLabels">
+                  <span>6 am</span>
+                  <span>9 am</span>
+                  <span>12 pm</span>
+                  <span>03 pm</span>
+                  <span>06 pm</span>
+                  <span>09 pm</span>
+                  <span>12 am</span>
+                  <span>03 am</span>
+                </div>
+              </div>
+            </div>
+
+          </section>
+
+          <!-- RIGHT COLUMN -->
+          <section class="right-section">
+
+            <!-- Chance of Rain -->
+            <div class="rain-section">
+              <div class="rain-header">
+                <h3 class="panel-title">Chance of Rain</h3>
+                <button class="filter-icon-btn" title="Rain Filters">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" y1="21" x2="4" y2="14"></line>
+                    <line x1="4" y1="10" x2="4" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12" y2="3"></line>
+                    <line x1="20" y1="21" x2="20" y2="16"></line>
+                    <line x1="20" y1="12" x2="20" y2="3"></line>
+                    <line x1="1" y1="14" x2="7" y2="14"></line>
+                    <line x1="9" y1="8" x2="15" y2="8"></line>
+                    <line x1="17" y1="16" x2="23" y2="16"></line>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="rain-bars-list" id="rainBarsList">
+                <div class="rain-bar-row">
+                  <span class="rain-time">09 am</span>
+                  <div class="bar-track">
+                    <div class="bar-fill purple-bar" style="width: 10%;"></div>
+                  </div>
+                </div>
+
+                <div class="rain-bar-row">
+                  <span class="rain-time">12 pm</span>
+                  <div class="bar-track">
+                    <div class="bar-fill purple-bar" style="width: 60%;"></div>
+                  </div>
+                </div>
+
+                <div class="rain-bar-row">
+                  <span class="rain-time">03 pm</span>
+                  <div class="bar-track">
+                    <div class="bar-fill purple-bar" style="width: 40%;"></div>
+                  </div>
+                </div>
+
+                <div class="rain-bar-row active-highlight-row">
+                  <span class="rain-time">06 pm</span>
+                  <div class="bar-track">
+                    <div class="bar-fill dark-navy-bar" style="width: 90%;"></div>
+                  </div>
+                </div>
+
+                <div class="rain-bar-row">
+                  <span class="rain-time">09 pm</span>
+                  <div class="bar-track">
+                    <div class="bar-fill purple-bar" style="width: 30%;"></div>
+                  </div>
+                </div>
+
+                <div class="rain-bar-row">
+                  <span class="rain-time">12 am</span>
+                  <div class="bar-track">
+                    <div class="bar-fill purple-bar" style="width: 15%;"></div>
+                  </div>
+                </div>
+
+                <div class="rain-bar-row">
+                  <span class="rain-time">03 am</span>
+                  <div class="bar-track">
+                    <div class="bar-fill purple-bar" style="width: 5%;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rain-axis-footer">
+                <span class="axis-item left">Sunny</span>
+                <span class="axis-item center">Rainy</span>
+                <span class="axis-item right">Heavy Rain</span>
+              </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- 3 Days Forecast -->
+            <div class="forecast-section">
+              <h3 class="panel-title">3 Days Forecast</h3>
+
+              <div class="forecast-cards-list" id="forecastCardsList">
+
+                <!-- Row 1: Pill on Left -->
+                <div class="forecast-card-row pill-left">
+                  <div class="temp-pill">
+                    <span class="arrow-up">↑</span> 26°
+                    <span class="arrow-down">↓</span> 11°
+                  </div>
+                  <div class="forecast-info-group">
+                    <div class="forecast-icon sun-cloud-icon">
+                      <svg viewBox="0 0 32 32" fill="none">
+                        <circle cx="12" cy="12" r="6" fill="#f8b42c"></circle>
+                        <path d="M10 24h12a6 6 0 0 0 1-11.9 8 8 0 0 0-14.7 2.2A5 5 0 0 0 10 24z" fill="#9bb3c9"></path>
+                      </svg>
+                    </div>
+                    <div class="forecast-text">
+                      <div class="forecast-day">Tuesday</div>
+                      <div class="forecast-cond">Cloudy</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Row 2: Pill on Right -->
+                <div class="forecast-card-row pill-right">
+                  <div class="forecast-info-group">
+                    <div class="forecast-icon rain-icon">
+                      <svg viewBox="0 0 32 32" fill="none">
+                        <path d="M10 20h12a5 5 0 0 0 1-9.9 7 7 0 0 0-12.7 1.8A4 4 0 0 0 10 20z" fill="#a4bcd4"></path>
+                        <line x1="12" y1="24" x2="10" y2="28" stroke="#7e9ebf" stroke-width="2" stroke-linecap="round"></line>
+                        <line x1="18" y1="24" x2="16" y2="28" stroke="#7e9ebf" stroke-width="2" stroke-linecap="round"></line>
+                      </svg>
+                    </div>
+                    <div class="forecast-text">
+                      <div class="forecast-day">Wednesday</div>
+                      <div class="forecast-cond">Rainy</div>
+                    </div>
+                  </div>
+                  <div class="temp-pill">
+                    <span class="arrow-up">↑</span> 26°
+                    <span class="arrow-down">↓</span> 11°
+                  </div>
+                </div>
+
+                <!-- Row 3: Pill on Left -->
+                <div class="forecast-card-row pill-left">
+                  <div class="temp-pill">
+                    <span class="arrow-up">↑</span> 26°
+                    <span class="arrow-down">↓</span> 11°
+                  </div>
+                  <div class="forecast-info-group">
+                    <div class="forecast-icon snow-icon">
+                      <svg viewBox="0 0 32 32" fill="none">
+                        <path d="M10 20h12a5 5 0 0 0 1-9.9 7 7 0 0 0-12.7 1.8A4 4 0 0 0 10 20z" fill="#b9c9db"></path>
+                        <circle cx="12" cy="25" r="1.5" fill="#8ca5c2"></circle>
+                        <circle cx="17" cy="25" r="1.5" fill="#8ca5c2"></circle>
+                      </svg>
+                    </div>
+                    <div class="forecast-text">
+                      <div class="forecast-day">Tuesday</div>
+                      <div class="forecast-cond">Snowfall</div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </section>
+
+        </div>
+
+        <!-- TWO-CITY COMPARISON VIEW -->
+        <div class="comparison-grid" id="comparisonGrid" style="display: none;">
+
+          <!-- COMPARISON CONTROLS HEADER -->
+          <div class="compare-header-card">
+            <div class="compare-title-row">
+              <div class="compare-badge-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <rect x="2" y="3" width="8" height="18" rx="2"></rect>
+                  <rect x="14" y="3" width="8" height="18" rx="2"></rect>
+                </svg>
+                <span>Perbandingan Cuaca 2 Kota</span>
+              </div>
+              <button class="btn-close-compare" id="closeCompareBtn" title="Kembali ke Dashboard Utama">
+                <span>&larr; Kembali ke Single View</span>
+              </button>
+            </div>
+
+            <!-- TWO CITIES SELECTOR BAR -->
+            <div class="compare-selectors-bar">
+              <div class="selector-box">
+                <label for="compareCity1Select">Kota Pertama (Kota 1)</label>
+                <div class="select-wrapper">
+                  <select id="compareCity1Select">
+                    <option value="Los Angeles">Los Angeles (USA)</option>
+                    <option value="Jakarta">Jakarta (Indonesia)</option>
+                    <option value="Tokyo">Tokyo (Jepang)</option>
+                    <option value="London">London (Inggris)</option>
+                    <option value="New York">New York (USA)</option>
+                    <option value="Surabaya">Surabaya (Indonesia)</option>
+                    <option value="Bandung">Bandung (Indonesia)</option>
+                  </select>
+                </div>
+              </div>
+
+              <button class="swap-cities-btn" id="swapCitiesBtn" title="Tukar Kota 1 & 2">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"></path>
+                </svg>
+              </button>
+
+              <div class="selector-box">
+                <label for="compareCity2Select">Kota Kedua (Kota 2)</label>
+                <div class="select-wrapper">
+                  <select id="compareCity2Select">
+                    <option value="Jakarta">Jakarta (Indonesia)</option>
+                    <option value="Tokyo">Tokyo (Jepang)</option>
+                    <option value="London">London (Inggris)</option>
+                    <option value="Los Angeles">Los Angeles (USA)</option>
+                    <option value="New York">New York (USA)</option>
+                    <option value="Surabaya">Surabaya (Indonesia)</option>
+                    <option value="Bandung">Bandung (Indonesia)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="compare-action-btn-wrap">
+                <button class="btn-primary-gradient" id="applyCompareBtn">Bandingkan Sekarang</button>
+              </div>
+            </div>
+
+            <!-- QUICK PRESET PILLS -->
+            <div class="quick-presets-row">
+              <span class="preset-label">Preset Populer:</span>
+              <button class="preset-pill" data-c1="Jakarta" data-c2="Tokyo">Jakarta vs Tokyo</button>
+              <button class="preset-pill" data-c1="Jakarta" data-c2="London">Jakarta vs London</button>
+              <button class="preset-pill" data-c1="Los Angeles" data-c2="New York">Los Angeles vs New York</button>
+              <button class="preset-pill" data-c1="Bandung" data-c2="Surabaya">Bandung vs Surabaya</button>
+            </div>
+          </div>
+
+          <!-- COMPARISON SUMMARY & HIGHLIGHTS BANNER -->
+          <div class="compare-summary-banner" id="compareSummaryBanner">
+            <div class="summary-headline-wrap">
+              <div class="summary-icon">⚖️</div>
+              <div>
+                <h2 class="summary-headline" id="summaryHeadline">Memuat perbandingan cuaca...</h2>
+                <p class="summary-subline" id="summarySubline">Analisis komparatif antara dua kota</p>
+              </div>
+            </div>
+
+            <!-- COMPARISON PILLS -->
+            <div class="compare-metrics-row">
+              <div class="compare-metric-badge" id="badgeTempDiff">
+                <span class="badge-icon">🌡️</span>
+                <span id="badgeTempDiffText">Selisih Suhu: -</span>
+              </div>
+              <div class="compare-metric-badge" id="badgeHumidity">
+                <span class="badge-icon">💧</span>
+                <span id="badgeHumidityText">Kelembapan: -</span>
+              </div>
+              <div class="compare-metric-badge" id="badgeRainier">
+                <span class="badge-icon">🌧️</span>
+                <span id="badgeRainierText">Peluang Hujan: -</span>
+              </div>
+              <div class="compare-metric-badge" id="badgeWindier">
+                <span class="badge-icon">💨</span>
+                <span id="badgeWindierText">Angin: -</span>
+              </div>
+            </div>
+
+            <div class="summary-advisory" id="summaryAdvisory">
+              <span class="advisory-icon">💡</span>
+              <span id="summaryAdvisoryText">Rekomendasi perjalanan dan aktivitas...</span>
+            </div>
+          </div>
+
+          <!-- SIDE-BY-SIDE HERO CARDS (CITY 1 VS CITY 2) -->
+          <div class="compare-cards-container">
+
+            <!-- CITY 1 CARD -->
+            <div class="compare-city-card" id="city1Card">
+              <div class="city-card-header" id="city1HeroHeader">
+                <div class="city-card-overlay"></div>
+                <div class="city-badge-tag tag-city1">Kota 1</div>
+                <div class="city-card-top-content">
+                  <div class="city-meta">
+                    <h3 class="city-title" id="city1Name">Kota 1</h3>
+                    <span class="city-subtitle" id="city1Subtitle">Negara</span>
+                    <span class="city-time" id="city1Time">Waktu</span>
+                  </div>
+                  <div class="city-temp-block">
+                    <span class="city-temp" id="city1Temp">--</span>
+                    <span class="city-unit" id="city1Unit">°C</span>
+                    <div class="city-condition-wrap">
+                      <span id="city1Condition">--</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CITY 1 HIGHLIGHTS -->
+              <div class="city-card-body">
+                <div class="city-metrics-grid">
+                  <div class="metric-item">
+                    <span class="metric-label">Kelembapan</span>
+                    <span class="metric-val" id="city1Humidity">--%</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="metric-label">Curah Hujan</span>
+                    <span class="metric-val" id="city1Precip">--%</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="metric-label">Kecepatan Angin</span>
+                    <span class="metric-val" id="city1Wind">-- km/h</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="metric-label">Terbit / Terbenam</span>
+                    <span class="metric-val" id="city1Sun">-- / --</span>
+                  </div>
+                </div>
+
+                <div class="mini-forecast-title">Prakiraan 3 Hari:</div>
+                <div class="mini-forecast-list" id="city1ForecastList"></div>
+              </div>
+            </div>
+
+            <!-- VS DIVIDER BADGE -->
+            <div class="vs-divider-badge">VS</div>
+
+            <!-- CITY 2 CARD -->
+            <div class="compare-city-card" id="city2Card">
+              <div class="city-card-header" id="city2HeroHeader">
+                <div class="city-card-overlay"></div>
+                <div class="city-badge-tag tag-city2">Kota 2</div>
+                <div class="city-card-top-content">
+                  <div class="city-meta">
+                    <h3 class="city-title" id="city2Name">Kota 2</h3>
+                    <span class="city-subtitle" id="city2Subtitle">Negara</span>
+                    <span class="city-time" id="city2Time">Waktu</span>
+                  </div>
+                  <div class="city-temp-block">
+                    <span class="city-temp" id="city2Temp">--</span>
+                    <span class="city-unit" id="city2Unit">°C</span>
+                    <div class="city-condition-wrap">
+                      <span id="city2Condition">--</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CITY 2 HIGHLIGHTS -->
+              <div class="city-card-body">
+                <div class="city-metrics-grid">
+                  <div class="metric-item">
+                    <span class="metric-label">Kelembapan</span>
+                    <span class="metric-val" id="city2Humidity">--%</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="metric-label">Curah Hujan</span>
+                    <span class="metric-val" id="city2Precip">--%</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="metric-label">Kecepatan Angin</span>
+                    <span class="metric-val" id="city2Wind">-- km/h</span>
+                  </div>
+                  <div class="metric-item">
+                    <span class="metric-label">Terbit / Terbenam</span>
+                    <span class="metric-val" id="city2Sun">-- / --</span>
+                  </div>
+                </div>
+
+                <div class="mini-forecast-title">Prakiraan 3 Hari:</div>
+                <div class="mini-forecast-list" id="city2ForecastList"></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- COMPARATIVE HOURLY TEMPERATURE CHART -->
+          <div class="compare-chart-card">
+            <div class="compare-chart-header">
+              <div>
+                <h3 class="chart-title">Grafik Perbandingan Suhu Per Jam</h3>
+                <span class="chart-subtitle">Fluktuasi suhu sepanjang hari antara kedua kota</span>
+              </div>
+              <div class="compare-legend">
+                <div class="legend-item legend-city1">
+                  <span class="legend-color-dot dot-city1"></span>
+                  <span id="legendCity1Name">Kota 1</span>
+                </div>
+                <div class="legend-item legend-city2">
+                  <span class="legend-color-dot dot-city2"></span>
+                  <span id="legendCity2Name">Kota 2</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="chart-container compare-chart-svg-wrap">
+              <svg id="compareHourlyChartSvg" viewBox="0 0 600 130" preserveAspectRatio="none">
+                <!-- Dynamically generated curves -->
+              </svg>
+              <div class="chart-time-labels" id="compareChartTimeLabels">
+                <span>06 am</span>
+                <span>09 am</span>
+                <span>12 pm</span>
+                <span>03 pm</span>
+                <span>06 pm</span>
+                <span>09 pm</span>
+                <span>12 am</span>
+                <span>03 am</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- HEAD-TO-HEAD COMPARATIVE PROGRESS METRICS -->
+          <div class="head-to-head-card">
+            <h3 class="chart-title" style="margin-bottom: 16px;">Perbandingan Metrik Utama (Head-to-Head)</h3>
+            <div class="h2h-list" id="h2hList">
+              <!-- Dynamically populated comparative bars -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- MONTHLY WEATHER CALENDAR VIEW -->
+        <div class="calendar-grid" id="calendarGrid" style="display: none;">
+
+          <!-- CALENDAR CONTROLS HEADER -->
+          <div class="calendar-header-card">
+            <div class="calendar-title-row">
+              <div class="calendar-badge-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>Kalender Cuaca Bulanan</span>
+              </div>
+              <button class="btn-close-calendar" id="closeCalendarBtn" title="Kembali ke Dashboard Utama">
+                <span>&larr; Kembali ke Dashboard</span>
+              </button>
+            </div>
+
+            <!-- CONTROLS BAR: CITY SELECTOR & MONTH NAVIGATION -->
+            <div class="calendar-selectors-bar">
+              <div class="selector-box">
+                <label for="calendarCitySelect">Pilih Kota / Wilayah</label>
+                <div class="select-wrapper">
+                  <select id="calendarCitySelect">
+                    <option value="Los Angeles">Los Angeles (USA)</option>
+                    <option value="Jakarta">Jakarta (Indonesia)</option>
+                    <option value="Tokyo">Tokyo (Jepang)</option>
+                    <option value="London">London (Inggris)</option>
+                    <option value="New York">New York (USA)</option>
+                    <option value="Surabaya">Surabaya (Indonesia)</option>
+                    <option value="Bandung">Bandung (Indonesia)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Month & Year Navigation -->
+              <div class="calendar-month-nav-box">
+                <label>Navigasi Bulan</label>
+                <div class="month-nav-controls">
+                  <button class="btn-month-nav" id="calendarPrevMonthBtn" title="Bulan Sebelumnya">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </button>
+                  <span class="month-year-title" id="calendarMonthYearTitle">Oktober 2026</span>
+                  <button class="btn-month-nav" id="calendarNextMonthBtn" title="Bulan Berikutnya">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                  <button class="btn-today-nav" id="calendarCurrentMonthBtn" title="Kembali ke Bulan Ini">Bulan Ini</button>
+                </div>
+              </div>
+
+              <div class="calendar-unit-indicator">
+                <label>Satuan Suhu</label>
+                <span class="unit-badge-tag" id="calendarUnitBadge">Celsius (°C)</span>
+              </div>
+            </div>
+
+            <!-- QUICK PRESET PILLS -->
+            <div class="quick-presets-row">
+              <span class="preset-label">Kota Populer:</span>
+              <button class="preset-pill calendar-preset-pill" data-city="Jakarta">Jakarta</button>
+              <button class="preset-pill calendar-preset-pill" data-city="Tokyo">Tokyo</button>
+              <button class="preset-pill calendar-preset-pill" data-city="London">London</button>
+              <button class="preset-pill calendar-preset-pill" data-city="Los Angeles">Los Angeles</button>
+              <button class="preset-pill calendar-preset-pill" data-city="Bandung">Bandung</button>
+              <button class="preset-pill calendar-preset-pill" data-city="Surabaya">Surabaya</button>
+            </div>
+          </div>
+
+          <!-- MONTHLY SUMMARY BANNER -->
+          <div class="calendar-summary-banner" id="calendarSummaryBanner">
+            <div class="summary-headline-wrap">
+              <div class="summary-icon">📅</div>
+              <div>
+                <h2 class="summary-headline" id="calendarSummaryHeadline">Memuat ringkasan kalender...</h2>
+                <p class="summary-subline" id="calendarSummarySubline">Prakiraan cuaca lengkap sepanjang bulan</p>
+              </div>
+            </div>
+
+            <!-- METRICS ROW -->
+            <div class="compare-metrics-row calendar-metrics-row">
+              <div class="compare-metric-badge" id="calBadgeAvgTemp">
+                <span class="badge-icon">🌡️</span>
+                <span id="calAvgTempText">Rata-rata: --° / --°</span>
+              </div>
+              <div class="compare-metric-badge" id="calBadgeRain">
+                <span class="badge-icon">🌧️</span>
+                <span id="calRainText">Peluang Hujan: --%</span>
+              </div>
+              <div class="compare-metric-badge" id="calBadgeSunnyDays">
+                <span class="badge-icon">☀️</span>
+                <span id="calSunnyText">-- Hari Cerah</span>
+              </div>
+              <div class="compare-metric-badge" id="calBadgeRainyDays">
+                <span class="badge-icon">☔</span>
+                <span id="calRainyText">-- Hari Hujan</span>
+              </div>
+            </div>
+
+            <div class="summary-advisory" id="calAdvisory">
+              <span class="advisory-icon">💡</span>
+              <span id="calAdvisoryText">Pilih tanggal pada kalender di bawah untuk melihat rincian cuaca dan rekomendasi aktivitas...</span>
+            </div>
+          </div>
+
+          <!-- CALENDAR WORKSPACE: GRID + INSPECTOR -->
+          <div class="calendar-workspace">
+
+            <!-- MAIN CALENDAR GRID CARD -->
+            <div class="calendar-grid-card">
+              <div class="calendar-weekdays-row">
+                <div class="weekday-col weekend">Min</div>
+                <div class="weekday-col">Sen</div>
+                <div class="weekday-col">Sel</div>
+                <div class="weekday-col">Rab</div>
+                <div class="weekday-col">Kam</div>
+                <div class="weekday-col">Jum</div>
+                <div class="weekday-col weekend">Sab</div>
+              </div>
+
+              <!-- DYNAMIC DAYS CONTAINER -->
+              <div class="calendar-days-container" id="calendarDaysGrid">
+                <!-- Dynamically populated day cells -->
+              </div>
+            </div>
+
+            <!-- SELECTED DAY INSPECTOR PANEL -->
+            <div class="calendar-inspector-card" id="calendarInspectorCard">
+              <div class="inspector-header">
+                <span class="inspector-tag" id="inspectorDateTag">Rincian Tanggal</span>
+                <span class="inspector-today-pill" id="inspectorTodayPill" style="display: none;">Hari Ini</span>
+              </div>
+
+              <h3 class="inspector-date-title" id="inspectorDateTitle">Pilih Tanggal</h3>
+              <p class="inspector-weekday-title" id="inspectorWeekdayTitle">Klik salah satu tanggal pada kalender</p>
+
+              <div class="inspector-weather-hero">
+                <div class="inspector-icon" id="inspectorIcon">
+                  <!-- SVG Icon -->
+                </div>
+                <div class="inspector-temp-wrap">
+                  <div class="inspector-temps">
+                    <span class="inspector-high" id="inspectorHigh">--°</span>
+                    <span class="inspector-slash">/</span>
+                    <span class="inspector-low" id="inspectorLow">--°</span>
+                  </div>
+                  <span class="inspector-cond" id="inspectorCondition">--</span>
+                </div>
+              </div>
+
+              <div class="inspector-details-list">
+                <div class="inspector-detail-item">
+                  <span class="detail-label">Peluang Hujan:</span>
+                  <span class="detail-val" id="inspectorRainVal">--%</span>
+                </div>
+                <div class="inspector-progress-track">
+                  <div class="inspector-progress-fill" id="inspectorRainBar" style="width: 0%;"></div>
+                </div>
+
+                <div class="inspector-advisory-box">
+                  <div class="advisory-title-wrap">
+                    <span class="advisory-mini-icon">💡</span>
+                    <strong>Saran Aktivitas:</strong>
+                  </div>
+                  <p id="inspectorAdvisoryText">Pilih tanggal untuk melihat saran aktivitas luar ruangan dan perlengkapan yang disarankan.</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ADD CITY MODAL -->
+  <div class="modal-backdrop" id="cityModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Add or Select City</h3>
+        <button class="modal-close-btn" id="modalCloseBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-search-row">
+          <input type="text" id="modalSearchInput" placeholder="Type city name (e.g. Jakarta, London, Tokyo, Paris)...">
+          <button id="modalSearchBtn">Search</button>
+        </div>
+        <div class="modal-results-list" id="modalResultsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal-box settings-modal-box">
+      <div class="modal-header">
+        <h3>Preferences & Settings</h3>
+        <button class="modal-close-btn" id="settingsCloseBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="settings-group">
+          <label>Temperature Unit</label>
+          <div class="unit-toggle-group">
+            <button class="unit-btn active" data-unit="Celsius">Celsius (°C)</button>
+            <button class="unit-btn" data-unit="Fahrenheit">Fahrenheit (°F)</button>
+          </div>
+        </div>
+        <div class="settings-note">
+          Preference automatically updates dashboard charts and forecast metrics.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USER AUTH & PROFILE MODAL -->
+  <div class="modal-backdrop" id="authModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="authModalTitle">Account & Profile</h3>
+        <button class="modal-close-btn" id="authCloseBtn">&times;</button>
+      </div>
+      <div class="modal-body" id="authModalBody">
+        <!-- Dynamically rendered by app.js based on auth state -->
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVED LOCATIONS MODAL -->
+  <div class="modal-backdrop" id="savedLocationsModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Saved Favorite Locations</h3>
+        <button class="modal-close-btn" id="savedLocationsCloseBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="savedLocationsList" class="modal-results-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
