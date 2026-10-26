@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -67,7 +68,11 @@ func main() {
 	})
 
 	// 7. Konfigurasi HTTP Server dengan Graceful Shutdown
-	serverAddr := fmt.Sprintf(":%s", cfg.AppPort)
+	port := strings.TrimPrefix(strings.TrimSpace(cfg.AppPort), ":")
+	if port == "" {
+		port = "8080"
+	}
+	serverAddr := fmt.Sprintf(":%s", port)
 	srv := &http.Server{
 		Addr:         serverAddr,
 		Handler:      router,

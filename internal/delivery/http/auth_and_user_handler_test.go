@@ -153,4 +153,24 @@ func TestAuthAndUserSettings(t *testing.T) {
 			t.Errorf("expected temperature_unit Fahrenheit, got %s", resp.Data.TemperatureUnit)
 		}
 	})
+
+	t.Run("CORS Preflight and Headers for Auth Endpoints", func(t *testing.T) {
+		req, _ := http.NewRequest(http.MethodOptions, "/api/v1/auth/login", nil)
+		req.Header.Set("Origin", "http://localhost:5500")
+		req.Header.Set("Access-Control-Request-Method", "POST")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if w.Code != http.StatusNoContent {
+			t.Fatalf("expected status 204 for OPTIONS preflight, got %d", w.Code)
+		}
+
+		if got := w.Header().Get("Access-Control-Allow-Origin"); got != "http://localhost:5500" {
+			t.Errorf("expected Access-Control-Allow-Origin to be reflected as http://localhost:5500, got %s", got)
+		}
+
+		if got := w.Header().Get("Access-Control-Allow-Credentials"); got != "true" {
+			t.Errorf("expected Access-Control-Allow-Credentials true, got %s", got)
+		}
+	})
 }

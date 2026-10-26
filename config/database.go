@@ -57,8 +57,17 @@ func LoadConfig() *Config {
 		rawBaseURL = rawBaseURL[:idx+3]
 	}
 
+	rawPort := cleanEnv(getEnv("PORT", ""))
+	if rawPort == "" {
+		rawPort = cleanEnv(getEnv("APP_PORT", "8080"))
+	}
+	if rawPort == "" {
+		rawPort = "8080"
+	}
+	rawPort = strings.TrimPrefix(rawPort, ":")
+
 	return &Config{
-		AppPort:            cleanEnv(getEnv("PORT", "")),
+		AppPort:            rawPort,
 		AppEnv:             cleanEnv(getEnv("APP_ENV", "development")),
 		DatabaseURL:        cleanEnv(getEnv("DATABASE_URL", "")),
 		DBHost:             cleanEnv(getEnv("DB_HOST", "localhost")),

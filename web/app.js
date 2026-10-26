@@ -7,9 +7,20 @@
   'use strict';
 
   // 1. API Configuration & Environment Detection
-  const API_BASE = (window.location.protocol === 'file:' || !window.location.port)
-    ? 'http://localhost:8080'
-    : '';
+  const getApiBase = () => {
+    // If opened directly from file system (file://)
+    if (window.location.protocol === 'file:') {
+      return 'http://localhost:8080';
+    }
+    // If opened via dev server on another port (e.g. Live Server on 5500, Vite on 5173, etc.)
+    if (window.location.port && window.location.port !== '8080') {
+      const hostname = window.location.hostname || 'localhost';
+      return `${window.location.protocol}//${hostname}:8080`;
+    }
+    // If served by the Go backend (port 8080) or reverse proxy in production
+    return '';
+  };
+  const API_BASE = getApiBase();
 
   // 2. Global Application State
   const state = {
@@ -58,15 +69,26 @@
     try {
       const url = `${API_BASE}${endpoint}`;
       const response = await fetch(url, { ...options, headers });
-      const data = await response.json();
+      
+      let data = null;
+      try {
+        data = await response.json();
+      } catch (jsonErr) {
+        throw new Error(response.ok 
+          ? 'Format respons tidak valid' 
+          : `HTTP Error ${response.status}: Server tidak merespons JSON`);
+      }
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || `HTTP Error ${response.status}`);
+      if (!response.ok || !data || !data.success) {
+        throw new Error((data && data.message) || `HTTP Error ${response.status}`);
       }
 
       return data;
     } catch (err) {
       console.warn(`[API] Error on ${endpoint}:`, err.message);
+      if (err.name === 'TypeError' || err.message === 'Failed to fetch') {
+        throw new Error('Gagal terhubung ke backend (Failed to fetch). Pastikan server Go sudah berjalan pada port 8080.');
+      }
       throw err;
     }
   }
@@ -694,8 +716,8 @@
         if (modalTitle) modalTitle.textContent = 'Login or Register';
         modalBody.innerHTML = `
           <div class="auth-tabs">
-            <button class="auth-tab-btn active" id="tabLoginBtn">Masuk</button>
-            <button class="auth-tab-btn" id="tabRegisterBtn">Daftar Akun</button>
+            <button type="button" class="auth-tab-btn active" id="tabLoginBtn">Masuk</button>
+            <button type="button" class="auth-tab-btn" id="tabRegisterBtn">Daftar Akun</button>
           </div>
 
           <form id="authForm" class="auth-form">
@@ -725,7 +747,8 @@
         const submitBtn = document.getElementById('authSubmitBtn');
         const form = document.getElementById('authForm');
 
-        tabLogin?.addEventListener('click', () => {
+        tabLogin?.addEventListener('click', (e) => {
+          e.preventDefault();
           isRegister = false;
           tabLogin.classList.add('active');
           tabRegister.classList.remove('active');
@@ -733,7 +756,8 @@
           submitBtn.textContent = 'Masuk ke Akun';
         });
 
-        tabRegister?.addEventListener('click', () => {
+        tabRegister?.addEventListener('click', (e) => {
+          e.preventDefault();
           isRegister = true;
           tabRegister.classList.add('active');
           tabLogin.classList.remove('active');
@@ -749,6 +773,16 @@
 
           if (!email || !password) {
             showToast('Email dan password wajib diisi', 'error');
+            return;
+          }
+
+          if (isRegister && (!name || name.length < 2)) {
+            showToast('Nama lengkap minimal harus 2 karakter', 'error');
+            return;
+          }
+
+          if (password.length < 6) {
+            showToast('Password minimal harus 6 karakter', 'error');
             return;
           }
 

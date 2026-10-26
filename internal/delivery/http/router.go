@@ -51,6 +51,7 @@ func SetupRouter(cfg RouterConfig) *gin.Engine {
 	if hasWebFiles {
 		indexPath = filepath.Join(webDir, "index.html")
 		r.Static("/web", webDir)
+		r.StaticFile("/index.html", indexPath)
 		r.StaticFile("/style.css", filepath.Join(webDir, "style.css"))
 		r.StaticFile("/app.js", filepath.Join(webDir, "app.js"))
 	}
