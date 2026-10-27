@@ -64,7 +64,7 @@ func SetupRouter(cfg RouterConfig) *gin.Engine {
 		"forecast":       "GET /api/v1/weather/forecast",
 		"calendar":       "GET /api/v1/weather/calendar?city={city}&year={year}&month={month}",
 		"compare":        "GET /api/v1/weather/compare?city1={city}&city2={city}",
-		"auth":           []string{"POST /api/v1/auth/register", "POST /api/v1/auth/login"},
+		"auth":           []string{"POST /api/v1/auth/register", "POST /api/v1/auth/login", "POST /login", "POST /register"},
 		"users":          []string{"PUT /api/v1/users/settings", "GET /api/v1/users/profile"},
 		"locations":      []string{"GET /api/v1/locations/search?q={city}", "POST /api/v1/locations/saved", "GET /api/v1/locations/saved"},
 	}
@@ -100,6 +100,10 @@ func SetupRouter(cfg RouterConfig) *gin.Engine {
 			Message: "go_vibe weather & analytics service is healthy",
 		})
 	})
+
+	// Alias rute auth langsung di root (untuk kompatibilitas frontend fetch /login & /register)
+	r.POST("/login", cfg.AuthHandler.Login)
+	r.POST("/register", cfg.AuthHandler.Register)
 
 	apiV1 := r.Group("/api/v1")
 	{

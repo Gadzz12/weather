@@ -19,6 +19,24 @@ import (
 	"go_26_10/internal/usecase"
 )
 
+// corsMiddleware membungkus http.Handler untuk mengizinkan request CORS dan menangani preflight (OPTIONS)
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, Origin, X-Requested-With")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		// Jika request adalah preflight OPTIONS, langsung kembalikan status 204 No Content
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	// 1. Inisialisasi Konfigurasi Environment
 	cfg := config.LoadConfig()
@@ -67,7 +85,7 @@ func main() {
 		JWTSecret:       cfg.JWTSecret,
 	})
 
-	// 7. Konfigurasi HTTP Server dengan Graceful Shutdown
+	// 7. Konfigurasi HTTP Server dengan Graceful Shutdown & CORS Wrapper
 	port := strings.TrimPrefix(strings.TrimSpace(cfg.AppPort), ":")
 	if port == "" {
 		port = "8080"
@@ -75,7 +93,7 @@ func main() {
 	serverAddr := fmt.Sprintf(":%s", port)
 	srv := &http.Server{
 		Addr:         serverAddr,
-		Handler:      router,
+		Handler:      corsMiddleware(router), // Handler dibungkus corsMiddleware
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}

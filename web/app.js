@@ -32,14 +32,12 @@
       return 'http://localhost:8080';
     }
 
-    // 1.4 Jika dijalankan di localhost dengan dev server port lain (Live Server 5500, Vite 5173, dll.)
-    if ((hostname === 'localhost' || hostname === '127.0.0.1') && port && port !== '8080') {
+    // 1.4 Jika dijalankan di localhost dengan dev server port selain 8080 (Live Server 5500, Vite 5173, dll.)
+    if ((hostname === 'localhost' || hostname === '127.0.0.1') && port !== '8080') {
       return `http://${hostname}:8080`;
     }
 
-    // 1.5 Pada environment hosting (Railway, Render, Koyeb, Fly.io, VPS, Docker, cPanel):
-    // Server Go menyajikan frontend & API pada domain yang sama.
-    // Gunakan relative path ('') agar request otomatis menuju domain dan protokol hosting saat ini (HTTPS/HTTP).
+    // 1.5 Pada environment hosting atau jika disajikan langsung oleh Go pada port yang sama:
     return '';
   }
 
@@ -177,8 +175,8 @@
     } catch (err) {
       console.warn(`[API] Error on ${endpoint}:`, err.message);
       if (err.name === 'TypeError' || (err.message && err.message.toLowerCase().includes('fetch'))) {
-        const targetDesc = API_BASE ? API_BASE : (window.location.origin || 'port 8080');
-        throw new Error(`Gagal terhubung ke backend (${targetDesc}). Pastikan server Go sudah berjalan dan dapat diakses.`);
+        const targetDesc = API_BASE ? API_BASE : (window.location.origin || 'http://localhost:8080');
+        throw new Error(`Gagal terhubung ke backend (${targetDesc}). Pastikan server Go sudah berjalan pada port 8080.`);
       }
       throw err;
     }
@@ -300,7 +298,6 @@
       return { x, y, val };
     });
 
-    // Smooth Bézier curve generator
     function buildSmoothPath(pts) {
       if (pts.length < 2) return '';
       let d = `M ${pts[0].x} ${pts[0].y}`;
@@ -345,7 +342,6 @@
       ${markersHtml}
     `;
 
-    // Render labels
     const labelsEl = document.getElementById('chartTimeLabels');
     if (labelsEl && labels && labels.length > 0) {
       labelsEl.innerHTML = labels.map(l => `<span>${formatTimeLabel(l)}</span>`).join('');
@@ -421,7 +417,6 @@
     const cur = data.current_weather;
     const high = data.highlights;
 
-    // Location
     const locNameEl = document.getElementById('locationTitle');
     if (locNameEl && loc) {
       const stateStr = loc.state ? `, ${loc.state}` : '';
@@ -429,13 +424,11 @@
       state.calendarCity = loc.city;
     }
 
-    // Hero background photo
     const heroCard = document.getElementById('weatherHeroCard');
     if (heroCard && loc && loc.image_url) {
       heroCard.style.backgroundImage = `url('${loc.image_url}')`;
     }
 
-    // Current temperature & condition
     const tempEl = document.getElementById('currentTemp');
     if (tempEl && cur) {
       tempEl.textContent = Math.round(cur.temperature);
@@ -461,7 +454,6 @@
       heroIconEl.innerHTML = getWeatherIconSvg(cur.condition, true);
     }
 
-    // Highlights
     if (high) {
       const precipEl = document.getElementById('highlightPrecip');
       if (precipEl) precipEl.textContent = high.precipitation || '0%';
@@ -479,19 +471,16 @@
       if (sunsetEl) sunsetEl.textContent = high.sunset || '17:55 WIB';
     }
 
-    // Hourly Chart
     if (data.hourly_temperature && data.hourly_temperature.length > 0) {
       const points = data.hourly_temperature.map(h => h.temp);
       const labels = data.hourly_temperature.map(h => h.time);
       renderSvgChart(points, labels, state.unit === 'Fahrenheit' ? '°F' : '°C');
     }
 
-    // Chance of Rain
     if (data.chance_of_rain) {
       renderChanceOfRain(data.chance_of_rain);
     }
 
-    // 3 Days Forecast
     if (data.three_days_forecast) {
       renderForecast(data.three_days_forecast);
     }
@@ -765,7 +754,6 @@
 
         unitBtns.forEach(b => b.classList.toggle('active', b === btn));
 
-        // If user is logged in, sync with backend
         if (state.token) {
           try {
             await apiRequest('/api/v1/users/settings', {
@@ -802,7 +790,6 @@
 
     const renderAuthContent = () => {
       if (state.token && state.user) {
-        // Logged-in profile view
         if (modalTitle) modalTitle.textContent = 'Profil & Preferensi Pengguna';
         modalBody.innerHTML = `
           <div class="profile-card">
@@ -836,7 +823,6 @@
           openSavedLocationsModal();
         });
       } else {
-        // Guest / Login & Register Form
         if (modalTitle) modalTitle.textContent = 'Masuk atau Daftar Akun';
         modalBody.innerHTML = `
           <div class="auth-tabs">
@@ -1059,7 +1045,6 @@
         state.chartPeriod = period;
 
         if (period === 'week') {
-          // Fetch 7-day forecast
           try {
             const res = await apiRequest(`/api/v1/weather/forecast?days=7&unit=${state.unit.toLowerCase()}${state.currentLocationId ? '&location_id=' + state.currentLocationId : ''}`);
             if (res && res.data && res.data.forecasts) {
@@ -1071,7 +1056,6 @@
             console.warn('Week forecast error:', e);
           }
         } else {
-          // Reload today hourly
           if (state.dashboardData && state.dashboardData.hourly_temperature) {
             const pts = state.dashboardData.hourly_temperature.map(h => h.temp);
             const lbls = state.dashboardData.hourly_temperature.map(h => h.time);
@@ -1469,10 +1453,7 @@
     });
   }
 
-  // =========================================================
   // 20. MONTHLY WEATHER CALENDAR FEATURE
-  // =========================================================
-
   const MONTH_NAMES_ID = [
     '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
     'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
@@ -1576,7 +1557,6 @@
       subline.textContent = `Ringkasan analisis cuaca bulanan dan rekomendasi aktivitas`;
     }
 
-    // Monthly Analytics Computation
     const days = data.days;
     let sumHigh = 0;
     let sumLow = 0;
@@ -1624,23 +1604,19 @@
       }
     }
 
-    // Days Grid Rendering
     const gridContainer = document.getElementById('calendarDaysGrid');
     if (!gridContainer) return;
     gridContainer.innerHTML = '';
 
-    // Calculate weekday of the first day (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
     const firstDayDate = new Date(data.year, data.month - 1, 1);
     const startWeekday = firstDayDate.getDay();
 
-    // Render empty padding cells for previous days of the week
     for (let i = 0; i < startWeekday; i++) {
       const pad = document.createElement('div');
       pad.className = 'calendar-day-cell empty-pad';
       gridContainer.appendChild(pad);
     }
 
-    // Find default selected day (today if found in this month, otherwise first day)
     let initialIndex = days.findIndex(d => d.is_today);
     if (initialIndex === -1) {
       initialIndex = 0;
@@ -1681,7 +1657,6 @@
       gridContainer.appendChild(cell);
     });
 
-    // Render inspector for the initially selected day
     if (days[state.selectedDayIndex]) {
       renderSelectedDayDetail(days[state.selectedDayIndex], data);
     }
@@ -1800,7 +1775,7 @@
     navItems.forEach(item => {
       item.addEventListener('click', (e) => {
         const tab = item.getAttribute('data-tab');
-        if (tab === 'settings') return; // Handled by settings modal
+        if (tab === 'settings') return;
         e.preventDefault();
 
         navItems.forEach(i => i.classList.remove('active'));
@@ -1832,7 +1807,7 @@
     });
   }
 
-  // 20. Initialize User Session if Token Exists
+  // 22. Initialize User Session if Token Exists
   async function initAuth() {
     if (!state.token) return;
 
@@ -1853,7 +1828,7 @@
     }
   }
 
-  // 21. Application Bootstrap
+  // 23. Application Bootstrap
   async function init() {
     console.log('[go_vibe] Initializing Weather & Analytics Dashboard...');
     await initAuth();
