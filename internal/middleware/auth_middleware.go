@@ -3,11 +3,8 @@ package middleware
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
-	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -22,68 +19,31 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-// allowedOrigins membaca daftar origin yang diizinkan dari variabel lingkungan ALLOWED_ORIGINS
-// (pisahkan dengan koma). Jika tidak diatur atau bernilai "*", semua origin diizinkan agar memudahkan hosting frontend dan backend.
-func allowedOrigins() []string {
-	env := strings.TrimSpace(os.Getenv("ALLOWED_ORIGINS"))
-	if env == "" || env == "*" {
-		return []string{"*"}
-	}
-	var result []string
-	for _, o := range strings.Split(env, ",") {
-		o = strings.TrimSpace(o)
-		if o != "" {
-			result = append(result, o)
-		}
-	}
-	if len(result) == 0 {
-		return []string{"*"}
-	}
-	return result
-}
-
-// isOriginAllowed memeriksa apakah origin terdapat dalam daftar yang diizinkan atau wildcard (*).
-func isOriginAllowed(origin string, allowed []string) bool {
-	for _, o := range allowed {
-		if o == "*" || o == origin {
-			return true
-		}
-	}
-	return false
-}
-
-// CORSMiddleware handles cross-origin resource sharing requests using github.com/gin-contrib/cors
+// CORSMiddleware menangani permintaan cross-origin secara dinamis dan aman untuk domain manapun
 func CORSMiddleware() gin.HandlerFunc {
-	env := strings.TrimSpace(os.Getenv("ALLOWED_ORIGINS"))
-	allowed := allowedOrigins()
+	return func(c *gin.Context) {
+		origin := c.Request.Header.Get("Origin")
 
-	corsConfig := cors.Config{
-		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
-		AllowHeaders: []string{
-			"Origin",
-			"Content-Type",
-			"Content-Length",
-			"Accept-Encoding",
-			"X-CSRF-Token",
-			"Authorization",
-			"Accept",
-			"Cache-Control",
-			"X-Requested-With",
-		},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           24 * time.Hour,
-	}
-
-	if env == "" || env == "*" || isOriginAllowed("*", allowed) {
-		corsConfig.AllowOriginFunc = func(origin string) bool {
-			return true
+		// Mengambil origin browser (misal https://weather.hostless.app) agar kompatibel dengan credentials
+		if origin != "" {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+		} else {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		}
-	} else {
-		corsConfig.AllowOrigins = allowed
-	}
 
-	return cors.New(corsConfig)
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, PATCH, DELETE, HEAD")
+		c.Writer.Header().Set("Access-Control-Expose-Headers", "Content-Length, Authorization")
+
+		// Preflight OPTIONS langsung dihentikan dengan status 204 No Content
+		if c.Request.Method == http.MethodOptions {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+
+		c.Next()
+	}
 }
 
 // ParseJWTToken parses and validates a JWT token string
