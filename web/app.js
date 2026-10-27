@@ -8,13 +8,20 @@
 
   // 1. API Configuration & Environment Detection
   const getApiBase = () => {
+    const hostname = window.location.hostname || 'localhost';
+
+    // Jika sudah di production (bukan localhost), gunakan URL backend production
+    // GANTI di bawah ini dengan domain backend hosting Anda, contoh: 'https://api-anda.com'
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return 'https://backend-anda.com';
+    }
+
     // If opened directly from file system (file://)
     if (window.location.protocol === 'file:') {
       return 'http://localhost:8080';
     }
     // If opened via dev server on another port (e.g. Live Server on 5500, Vite on 5173, etc.)
     if (window.location.port && window.location.port !== '8080') {
-      const hostname = window.location.hostname || 'localhost';
       return `${window.location.protocol}//${hostname}:8080`;
     }
     // If served by the Go backend (port 8080) or reverse proxy in production
