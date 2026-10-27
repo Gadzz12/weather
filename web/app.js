@@ -7,27 +7,43 @@
   'use strict';
 
   // 1. API Configuration & Environment Detection
-  const getApiBase = () => {
-    const hostname = window.location.hostname || 'localhost';
-
-    // Jika sudah di production (bukan localhost), gunakan URL backend production
-    // GANTI di bawah ini dengan domain backend hosting Anda, contoh: 'https://api-anda.com'
-  if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-      return 'https://go-vibe-backend.hostless.app';
+  function resolveApiBase() {
+    // 1.1 Cek custom URL dari localStorage (bisa disetel lewat menu Pengaturan)
+    const customUrl = localStorage.getItem('custom_api_base_url');
+    if (customUrl && customUrl.trim() !== '') {
+      return customUrl.trim().replace(/\/+$/, '');
     }
 
-    // If opened directly from file system (file://)
-    if (window.location.protocol === 'file:') {
+    // 1.2 Cek variabel global window atau meta tag
+    if (window.API_BASE_URL && typeof window.API_BASE_URL === 'string' && window.API_BASE_URL.trim() !== '') {
+      return window.API_BASE_URL.trim().replace(/\/+$/, '');
+    }
+    const metaTag = document.querySelector('meta[name="backend-url"]');
+    if (metaTag && metaTag.content && metaTag.content.trim() !== '') {
+      return metaTag.content.trim().replace(/\/+$/, '');
+    }
+
+    const protocol = window.location.protocol || '';
+    const hostname = window.location.hostname || 'localhost';
+    const port = window.location.port || '';
+
+    // 1.3 Jika dibuka langsung dari browser melalui protokol file://
+    if (protocol === 'file:') {
       return 'http://localhost:8080';
     }
-    // If opened via dev server on another port (e.g. Live Server on 5500, Vite on 5173, etc.)
-    if (window.location.port && window.location.port !== '8080') {
-      return `${window.location.protocol}//${hostname}:8080`;
+
+    // 1.4 Jika dijalankan di localhost dengan dev server port lain (Live Server 5500, Vite 5173, dll.)
+    if ((hostname === 'localhost' || hostname === '127.0.0.1') && port && port !== '8080') {
+      return `http://${hostname}:8080`;
     }
-    // If served by the Go backend (port 8080) or reverse proxy in production
+
+    // 1.5 Pada environment hosting (Railway, Render, Koyeb, Fly.io, VPS, Docker, cPanel):
+    // Server Go menyajikan frontend & API pada domain yang sama.
+    // Gunakan relative path ('') agar request otomatis menuju domain dan protokol hosting saat ini (HTTPS/HTTP).
     return '';
-  };
-  const API_BASE = getApiBase();
+  }
+
+  let API_BASE = resolveApiBase();
 
   // 2. Global Application State
   const state = {
@@ -160,8 +176,9 @@
       return data;
     } catch (err) {
       console.warn(`[API] Error on ${endpoint}:`, err.message);
-      if (err.name === 'TypeError' || err.message === 'Failed to fetch') {
-        throw new Error('Gagal terhubung ke backend (Failed to fetch). Pastikan server Go sudah berjalan pada port 8080.');
+      if (err.name === 'TypeError' || (err.message && err.message.toLowerCase().includes('fetch'))) {
+        const targetDesc = API_BASE ? API_BASE : (window.location.origin || 'port 8080');
+        throw new Error(`Gagal terhubung ke backend (${targetDesc}). Pastikan server Go sudah berjalan dan dapat diakses.`);
       }
       throw err;
     }
@@ -688,13 +705,45 @@
 
     if (!modal) return;
 
+    const apiInput = document.getElementById('apiBaseInput');
+    const saveApiBtn = document.getElementById('saveApiBaseBtn');
+
     const openModal = () => {
       modal.classList.add('active');
       unitBtns.forEach(b => {
         const u = b.getAttribute('data-unit');
         b.classList.toggle('active', u.toLowerCase() === state.unit.toLowerCase());
       });
+      if (apiInput) {
+        apiInput.value = localStorage.getItem('custom_api_base_url') || '';
+      }
     };
+
+    saveApiBtn?.addEventListener('click', async () => {
+      const val = apiInput ? apiInput.value.trim().replace(/\/+$/, '') : '';
+      if (val) {
+        localStorage.setItem('custom_api_base_url', val);
+        API_BASE = val;
+        showToast(`URL Backend disimpan: ${val}. Menghubungkan...`, 'info');
+      } else {
+        localStorage.removeItem('custom_api_base_url');
+        API_BASE = resolveApiBase();
+        showToast('Mode URL Backend otomatis diaktifkan.', 'info');
+      }
+
+      try {
+        const health = await fetch(`${API_BASE}/health`);
+        if (health.ok) {
+          showToast('Koneksi ke server backend Go berhasil!', 'success');
+        } else {
+          showToast(`Backend merespons HTTP ${health.status}`, 'warning');
+        }
+      } catch (e) {
+        showToast(`Peringatan: Tidak dapat terhubung ke ${API_BASE || 'backend'}: ${e.message}`, 'error');
+      }
+
+      loadDashboard(state.currentLocationId);
+    });
 
     const closeModal = () => modal.classList.remove('active');
 

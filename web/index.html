@@ -990,6 +990,17 @@
         <div class="settings-note">
           Preferensi satuan suhu akan otomatis diterapkan ke seluruh grafik dan data prakiraan cuaca.
         </div>
+
+        <div class="settings-group" style="margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
+          <label>URL Backend API (Hosting)</label>
+          <div style="display: flex; gap: 8px; margin-top: 6px;">
+            <input type="text" id="apiBaseInput" placeholder="Otomatis (Domain Sama)" style="flex: 1; padding: 9px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #fff; font-size: 13px;">
+            <button type="button" class="btn-secondary" id="saveApiBaseBtn" style="padding: 0 14px; font-size: 12px; border-radius: 8px; white-space: nowrap; cursor: pointer;">Simpan</button>
+          </div>
+          <div class="settings-note" style="margin-top: 6px; font-size: 11.5px; color: #8c92a4;">
+            Kosongkan jika frontend dan backend di-hosting di server yang sama. Isi dengan URL backend Go Anda (misal: <code>https://backend-anda.com</code>) jika frontend di-hosting terpisah.
+          </div>
+        </div>
       </div>
     </div>
   </div>

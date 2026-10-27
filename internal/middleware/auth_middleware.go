@@ -20,22 +20,12 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-// allowedOriginsLoad membaca daftar origin yang diizinkan dari variabel lingkungan ALLOWED_ORIGINS
-// (pisahkan dengan koma). Jika tidak diatur, gunakan default untuk pengembangan local.
+// allowedOrigins membaca daftar origin yang diizinkan dari variabel lingkungan ALLOWED_ORIGINS
+// (pisahkan dengan koma). Jika tidak diatur atau bernilai "*", semua origin diizinkan agar memudahkan hosting frontend dan backend.
 func allowedOrigins() []string {
-	env := os.Getenv("ALLOWED_ORIGINS")
-	defaults := []string{
-		"http://localhost:3000",
-		"http://localhost:5173",
-		"http://localhost:5500",
-		"http://localhost:8080",
-		"http://127.0.0.1:3000",
-		"http://127.0.0.1:5173",
-		"http://127.0.0.1:5500",
-		"http://127.0.0.1:8080",
-	}
-	if env == "" {
-		return defaults
+	env := strings.TrimSpace(os.Getenv("ALLOWED_ORIGINS"))
+	if env == "" || env == "*" {
+		return []string{"*"}
 	}
 	var result []string
 	for _, o := range strings.Split(env, ",") {
@@ -45,15 +35,15 @@ func allowedOrigins() []string {
 		}
 	}
 	if len(result) == 0 {
-		return defaults
+		return []string{"*"}
 	}
 	return result
 }
 
-// isOriginAllowed memeriksa apakah origin terdapat dalam daftar yang diizinkan.
+// isOriginAllowed memeriksa apakah origin terdapat dalam daftar yang diizinkan atau wildcard (*).
 func isOriginAllowed(origin string, allowed []string) bool {
 	for _, o := range allowed {
-		if o == origin {
+		if o == "*" || o == origin {
 			return true
 		}
 	}
