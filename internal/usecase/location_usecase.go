@@ -33,7 +33,15 @@ func (u *locationUsecase) SearchLocations(ctx context.Context, query string) ([]
 		return nil, err
 	}
 
-	return locations, nil
+	// Filter ketat: Hanya daerah di Indonesia yang dikembalikan
+	indonesianLocations := make([]domain.Location, 0, len(locations))
+	for _, loc := range locations {
+		if strings.EqualFold(strings.TrimSpace(loc.Country), "indonesia") {
+			indonesianLocations = append(indonesianLocations, loc)
+		}
+	}
+
+	return indonesianLocations, nil
 }
 
 func (u *locationUsecase) SaveLocation(ctx context.Context, userID, locationID uuid.UUID) (*domain.UserSavedLocation, error) {
@@ -43,7 +51,12 @@ func (u *locationUsecase) SaveLocation(ctx context.Context, userID, locationID u
 		return nil, errors.New("lokasi dengan ID tersebut tidak ditemukan")
 	}
 
-	// 2. Cek apakah pengguna sudah menyimpan lokasi ini sebelumnya
+	// 2. Pastikan lokasi yang disimpan berada di wilayah Indonesia
+	if !strings.EqualFold(strings.TrimSpace(loc.Country), "indonesia") {
+		return nil, errors.New("hanya daerah di Indonesia yang dapat disimpan ke daftar favorit")
+	}
+
+	// 3. Cek apakah pengguna sudah menyimpan lokasi ini sebelumnya
 	existing, err := u.locationRepo.GetUserSavedLocations(ctx, userID)
 	if err == nil {
 		for _, s := range existing {
@@ -53,7 +66,7 @@ func (u *locationUsecase) SaveLocation(ctx context.Context, userID, locationID u
 		}
 	}
 
-	// 3. Jika ini lokasi pertama yang disimpan, jadikan default
+	// 4. Jika ini lokasi pertama yang disimpan, jadikan default
 	isDefault := len(existing) == 0
 
 	savedLocation := &domain.UserSavedLocation{

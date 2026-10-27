@@ -78,12 +78,12 @@ go_vibe/
 | Column | Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | `UUID` | Primary Key | ID Unik Lokasi |
-| `city` | `VARCHAR(100)` | NOT NULL | Nama kota (misal: Los Angeles) |
-| `state` | `VARCHAR(100)` | NULL | Nama negara bagian (misal: CA) |
-| `country` | `VARCHAR(100)` | NOT NULL | Nama negara (misal: USA) |
+| `city` | `VARCHAR(100)` | NOT NULL | Nama kota (misal: Jakarta) |
+| `state` | `VARCHAR(100)` | NULL | Nama provinsi (misal: DKI Jakarta) |
+| `country` | `VARCHAR(100)` | NOT NULL | Nama negara (Indonesia) |
 | `latitude` | `DECIMAL(10, 8)` | NOT NULL | Koordinat Latitude |
 | `longitude` | `DECIMAL(11, 8)` | NOT NULL | Koordinat Longitude |
-| `image_url` | `TEXT` | NULL | Foto latar belakang lokasi (misal: Golden Gate Bridge) |
+| `image_url` | `TEXT` | NULL | Foto latar belakang lokasi (misal: Monas) |
 
 ### 3. Table: `user_saved_locations`
 | Column | Type | Constraints | Description |
@@ -133,10 +133,10 @@ go_vibe/
     "data": {
       "location": {
         "id": "loc-12345",
-        "city": "Los Angeles",
-        "state": "CA",
-        "country": "USA",
-        "image_url": "https://example.com/images/la-bridge.jpg"
+        "city": "Jakarta",
+        "state": "DKI Jakarta",
+        "country": "Indonesia",
+        "image_url": "https://images.unsplash.com/photo-1555899434-94d1368aa7af?auto=format&fit=crop&w=800&q=80"
       },
       "current_weather": {
         "temperature": 12,

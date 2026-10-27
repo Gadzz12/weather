@@ -135,8 +135,34 @@ func TestLocationHandler(t *testing.T) {
 		if resp.Data[0].Location.City != "Jakarta" {
 			t.Errorf("expected saved city Jakarta, got %s", resp.Data[0].Location.City)
 		}
+		if resp.Data[0].Location.Country != "Indonesia" {
+			t.Errorf("expected country Indonesia, got %s", resp.Data[0].Location.Country)
+		}
 		if !resp.Data[0].IsDefault {
 			t.Errorf("expected first saved location to be marked default")
+		}
+	})
+
+	t.Run("Search Non-Indonesian Location Returns Empty", func(t *testing.T) {
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/locations/search?q=Tokyo", nil)
+		req.Header.Set("Authorization", "Bearer "+token)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Fatalf("expected status 200, got %d. Body: %s", w.Code, w.Body.String())
+		}
+
+		var resp struct {
+			Success bool              `json:"success"`
+			Data    []domain.Location `json:"data"`
+		}
+		if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+			t.Fatalf("failed to decode response: %v", err)
+		}
+
+		if len(resp.Data) != 0 {
+			t.Errorf("expected 0 results for foreign city Tokyo, got %d", len(resp.Data))
 		}
 	})
 }

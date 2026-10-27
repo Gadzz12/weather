@@ -515,7 +515,7 @@
       const locations = res.data || [];
 
       if (locations.length === 0) {
-        dropdownEl.innerHTML = '<div class="dropdown-item" style="color:#8c92a4;">Tidak ditemukan kota yang cocok</div>';
+        dropdownEl.innerHTML = '<div class="dropdown-item" style="color:#8c92a4;">Tidak ditemukan daerah di Indonesia yang cocok</div>';
         return;
       }
 
@@ -622,7 +622,7 @@
         .then(res => {
           const locs = res.data || [];
           if (locs.length === 0) {
-            resultsList.innerHTML = '<div style="padding:10px; color:#8c92a4; text-align:center;">Tidak ada kota ditemukan</div>';
+            resultsList.innerHTML = '<div style="padding:10px; color:#8c92a4; text-align:center;">Tidak ada daerah di Indonesia yang ditemukan</div>';
             return;
           }
 

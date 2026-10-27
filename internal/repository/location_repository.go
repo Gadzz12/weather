@@ -301,14 +301,29 @@ func (r *locationRepository) seedDefaultLocations() {
 		},
 	}
 
+	if r.db != nil {
+		// 1. Hapus seluruh data tersimpan pengguna yang merujuk ke lokasi luar negeri
+		_ = r.db.Exec("DELETE FROM user_saved_locations WHERE location_id IN (SELECT id FROM locations WHERE LOWER(TRIM(country)) != 'indonesia')").Error
+
+		// 2. Hapus semua lokasi luar negeri dari database
+		_ = r.db.Exec("DELETE FROM locations WHERE LOWER(TRIM(country)) != 'indonesia'").Error
+	}
+
 	for _, loc := range seeds {
 		r.mockLocations[loc.ID] = loc
 		if r.db != nil {
 			var existing domain.Location
 			if err := r.db.First(&existing, "id = ?", loc.ID).Error; err != nil {
 				_ = r.db.Create(loc).Error
+			} else {
+				_ = r.db.Model(&domain.Location{}).Where("id = ?", loc.ID).Updates(loc).Error
 			}
 		}
+	}
+
+	if r.db != nil {
+		// 3. Normalisasi relasi lama jika ID 02 sebelumnya menyimpan Jakarta sebelum reposisi ke ID 01
+		_ = r.db.Exec("UPDATE user_saved_locations SET location_id = '00000000-0000-0000-0000-000000000001' WHERE location_id = '00000000-0000-0000-0000-000000000002'").Error
 	}
 }
 
@@ -316,8 +331,11 @@ func (r *locationRepository) Search(ctx context.Context, query string) ([]domain
 	cleanQ := strings.TrimSpace(query)
 	if r.db != nil {
 		var locations []domain.Location
-		err := r.db.WithContext(ctx).Where("city ILIKE ? OR country ILIKE ?", "%"+cleanQ+"%", "%"+cleanQ+"%").Find(&locations).Error
-		if err == nil && len(locations) > 0 {
+		// Hanya cari kota/wilayah di Indonesia
+		err := r.db.WithContext(ctx).
+			Where("(city ILIKE ? OR COALESCE(state, '') ILIKE ?) AND LOWER(TRIM(country)) = ?", "%"+cleanQ+"%", "%"+cleanQ+"%", "indonesia").
+			Find(&locations).Error
+		if err == nil {
 			return locations, nil
 		}
 	}
@@ -327,17 +345,15 @@ func (r *locationRepository) Search(ctx context.Context, query string) ([]domain
 	defer r.mu.RUnlock()
 	q := strings.ToLower(cleanQ)
 	for _, loc := range r.mockLocations {
+		if !strings.EqualFold(loc.Country, "indonesia") {
+			continue
+		}
 		cityName := strings.ToLower(loc.City)
 		stateName := ""
 		if loc.State != nil {
 			stateName = strings.ToLower(*loc.State)
 		}
-		if q == "" || strings.Contains(cityName, q) || strings.Contains(stateName, q) {
-			results = append(results, *loc)
-		}
-	}
-	if len(results) == 0 {
-		for _, loc := range r.mockLocations {
+		if q == "" || strings.Contains(cityName, q) || strings.Contains(stateName, q) || q == "indonesia" {
 			results = append(results, *loc)
 		}
 	}
@@ -347,14 +363,14 @@ func (r *locationRepository) Search(ctx context.Context, query string) ([]domain
 func (r *locationRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.Location, error) {
 	if r.db != nil {
 		var loc domain.Location
-		if err := r.db.WithContext(ctx).First(&loc, "id = ?", id).Error; err == nil {
+		if err := r.db.WithContext(ctx).Where("LOWER(TRIM(country)) = ?", "indonesia").First(&loc, "id = ?", id).Error; err == nil {
 			return &loc, nil
 		}
 	}
 
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	if loc, ok := r.mockLocations[id]; ok {
+	if loc, ok := r.mockLocations[id]; ok && strings.EqualFold(loc.Country, "indonesia") {
 		return loc, nil
 	}
 	return nil, fmt.Errorf("location not found")
@@ -363,6 +379,11 @@ func (r *locationRepository) FindByID(ctx context.Context, id uuid.UUID) (*domai
 func (r *locationRepository) Create(ctx context.Context, location *domain.Location) error {
 	if location.ID == uuid.Nil {
 		location.ID = uuid.New()
+	}
+
+	// Validasi integritas: hanya daerah di Indonesia yang didukung
+	if !strings.EqualFold(strings.TrimSpace(location.Country), "indonesia") {
+		return fmt.Errorf("hanya daerah di wilayah Indonesia yang didukung")
 	}
 
 	if r.db != nil {
@@ -379,6 +400,11 @@ func (r *locationRepository) Create(ctx context.Context, location *domain.Locati
 }
 
 func (r *locationRepository) SaveUserLocation(ctx context.Context, savedLocation *domain.UserSavedLocation) error {
+	// Pastikan lokasi yang disimpan berada di Indonesia
+	if savedLocation.Location != nil && !strings.EqualFold(savedLocation.Location.Country, "indonesia") {
+		return fmt.Errorf("hanya daerah di Indonesia yang dapat disimpan")
+	}
+
 	if r.db != nil {
 		if err := r.db.WithContext(ctx).Create(savedLocation).Error; err == nil {
 			return nil
@@ -393,6 +419,9 @@ func (r *locationRepository) SaveUserLocation(ctx context.Context, savedLocation
 			savedCopy.Location = loc
 		}
 	}
+	if savedCopy.Location != nil && !strings.EqualFold(savedCopy.Location.Country, "indonesia") {
+		return fmt.Errorf("hanya daerah di Indonesia yang dapat disimpan")
+	}
 	r.mockUserLocations[savedLocation.UserID] = append(r.mockUserLocations[savedLocation.UserID], &savedCopy)
 	return nil
 }
@@ -400,7 +429,11 @@ func (r *locationRepository) SaveUserLocation(ctx context.Context, savedLocation
 func (r *locationRepository) GetUserSavedLocations(ctx context.Context, userID uuid.UUID) ([]domain.UserSavedLocation, error) {
 	if r.db != nil {
 		var list []domain.UserSavedLocation
-		if err := r.db.WithContext(ctx).Preload("Location").Where("user_id = ?", userID).Find(&list).Error; err == nil && len(list) > 0 {
+		if err := r.db.WithContext(ctx).
+			Joins("JOIN locations ON locations.id = user_saved_locations.location_id").
+			Where("user_saved_locations.user_id = ? AND LOWER(TRIM(locations.country)) = ?", userID, "indonesia").
+			Preload("Location").
+			Find(&list).Error; err == nil && len(list) > 0 {
 			return list, nil
 		}
 	}
@@ -408,9 +441,12 @@ func (r *locationRepository) GetUserSavedLocations(ctx context.Context, userID u
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	ptrSlice := r.mockUserLocations[userID]
-	results := make([]domain.UserSavedLocation, len(ptrSlice))
-	for i, saved := range ptrSlice {
-		results[i] = *saved
+	var results []domain.UserSavedLocation
+	for _, saved := range ptrSlice {
+		if saved.Location != nil && !strings.EqualFold(saved.Location.Country, "indonesia") {
+			continue
+		}
+		results = append(results, *saved)
 	}
 	return results, nil
 }
@@ -418,7 +454,11 @@ func (r *locationRepository) GetUserSavedLocations(ctx context.Context, userID u
 func (r *locationRepository) GetDefaultUserLocation(ctx context.Context, userID uuid.UUID) (*domain.UserSavedLocation, error) {
 	if r.db != nil {
 		var saved domain.UserSavedLocation
-		if err := r.db.WithContext(ctx).Preload("Location").Where("user_id = ? AND is_default = ?", userID, true).First(&saved).Error; err == nil {
+		if err := r.db.WithContext(ctx).
+			Joins("JOIN locations ON locations.id = user_saved_locations.location_id").
+			Where("user_saved_locations.user_id = ? AND user_saved_locations.is_default = ? AND LOWER(TRIM(locations.country)) = ?", userID, true, "indonesia").
+			Preload("Location").
+			First(&saved).Error; err == nil {
 			return &saved, nil
 		}
 	}
@@ -427,6 +467,9 @@ func (r *locationRepository) GetDefaultUserLocation(ctx context.Context, userID 
 	defer r.mu.RUnlock()
 	for _, saved := range r.mockUserLocations[userID] {
 		if saved.IsDefault {
+			if saved.Location != nil && !strings.EqualFold(saved.Location.Country, "indonesia") {
+				continue
+			}
 			itCopy := *saved
 			return &itCopy, nil
 		}

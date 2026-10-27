@@ -47,12 +47,12 @@ func (u *weatherUsecase) resolveLocation(ctx context.Context, userID *uuid.UUID,
 	}
 
 	if locationID != nil {
-		if loc, err := u.locationRepo.FindByID(ctx, *locationID); err == nil && loc != nil {
+		if loc, err := u.locationRepo.FindByID(ctx, *locationID); err == nil && loc != nil && strings.EqualFold(loc.Country, "indonesia") {
 			return loc
 		}
-		log.Printf("[INFO] Location ID %s not found in DB, using default %s\n", locationID.String(), targetLocation.City)
+		log.Printf("[INFO] Location ID %s not found in DB or outside Indonesia, using default %s\n", locationID.String(), targetLocation.City)
 	} else if userID != nil {
-		if saved, err := u.locationRepo.GetDefaultUserLocation(ctx, *userID); err == nil && saved != nil && saved.Location != nil {
+		if saved, err := u.locationRepo.GetDefaultUserLocation(ctx, *userID); err == nil && saved != nil && saved.Location != nil && strings.EqualFold(saved.Location.Country, "indonesia") {
 			return saved.Location
 		}
 	}
@@ -404,7 +404,7 @@ func (u *weatherUsecase) resolveLocationByQueryOrID(
 	fallback *domain.Location,
 ) *domain.Location {
 	if locID != nil {
-		if loc, err := u.locationRepo.FindByID(ctx, *locID); err == nil && loc != nil {
+		if loc, err := u.locationRepo.FindByID(ctx, *locID); err == nil && loc != nil && strings.EqualFold(loc.Country, "indonesia") {
 			return loc
 		}
 	}
@@ -412,20 +412,22 @@ func (u *weatherUsecase) resolveLocationByQueryOrID(
 	trimmed := strings.TrimSpace(query)
 	if trimmed != "" {
 		if parsedUUID, err := uuid.Parse(trimmed); err == nil {
-			if loc, err := u.locationRepo.FindByID(ctx, parsedUUID); err == nil && loc != nil {
+			if loc, err := u.locationRepo.FindByID(ctx, parsedUUID); err == nil && loc != nil && strings.EqualFold(loc.Country, "indonesia") {
 				return loc
 			}
 		}
 
 		if locs, err := u.locationRepo.Search(ctx, trimmed); err == nil && len(locs) > 0 {
 			for _, l := range locs {
-				if strings.EqualFold(l.City, trimmed) {
+				if strings.EqualFold(l.City, trimmed) && strings.EqualFold(l.Country, "indonesia") {
 					locCopy := l
 					return &locCopy
 				}
 			}
-			locCopy := locs[0]
-			return &locCopy
+			if strings.EqualFold(locs[0].Country, "indonesia") {
+				locCopy := locs[0]
+				return &locCopy
+			}
 		}
 	}
 

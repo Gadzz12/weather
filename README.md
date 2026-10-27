@@ -95,8 +95,8 @@ Setelah server aktif:
 | `GET` | `/api/v1/weather/forecast` | Public / Auth | **Prakiraan 3 Hari Ke Depan**: Prediksi cuaca dengan estimasi suhu maksimum ($\uparrow$) & minimum ($\downarrow$) |
 | `GET` | `/api/v1/weather/calendar` | Public / Auth | **Kalender Cuaca Bulanan**: Prakiraan cuaca 1 bulan penuh (hari, tanggal, kondisi cuaca, suhu, peluang hujan, advisory aktivitas & navigasi bulan) |
 | `GET` | `/api/v1/weather/compare` | Public / Auth | **Perbandingan 2 Kota**: Akses dan bandingkan cuaca 2 kota (suhu, kelembapan, angin, hujan, grafik komparatif & saran perjalanan) |
-| `GET` | `/api/v1/locations/search` | Protected (JWT) | **Pencarian Wilayah**: Cari kota berdasarkan nama/negara (`?q=Jakarta`) |
-| `POST` | `/api/v1/locations/saved` | Protected (JWT) | **Tambah Kota Favorit**: Simpan kota favorit pengguna |
+| `GET` | `/api/v1/locations/search` | Protected (JWT) | **Pencarian Wilayah**: Cari daerah di wilayah Indonesia berdasarkan nama kota atau provinsi (`?q=Jakarta`) |
+| `POST` | `/api/v1/locations/saved` | Protected (JWT) | **Tambah Kota Favorit**: Simpan kota favorit pengguna (khusus wilayah Indonesia) |
 | `GET` | `/api/v1/locations/saved` | Protected (JWT) | **Daftar Kota Favorit**: Ambil seluruh kota tersimpan milik pengguna |
 
 ---
@@ -119,7 +119,7 @@ Setelah server aktif:
 * Ringkasan ramalan cuaca multi-hari dengan indikator suhu maksimum ($\uparrow$) dan minimum ($\downarrow$), nama hari, tanggal, kondisi cuaca, ikon, dan narasi ringkasan.
 
 ### 4. Pengelolaan Lokasi & Tambah Kota (Locations & Add City)
-* **Search:** `GET /api/v1/locations/search?q={city}` mencari kota di database PostgreSQL (dengan fallback katalog kota bawaan).
+* **Search:** `GET /api/v1/locations/search?q={city}` mencari daerah di wilayah Indonesia (dengan validasi khusus daerah Indonesia dan pembersihan data luar negeri).
 * **Bookmark:** `POST /api/v1/locations/saved` menyimpan relasi lokasi ke tabel `user_saved_locations`, otomatis menandai kota pertama sebagai *default*.
 * **List:** `GET /api/v1/locations/saved` menampilkan daftar kota favorit pengguna.
 
@@ -132,6 +132,6 @@ Setelah server aktif:
 * **Fitur Utama Web:**
   * Akses langsung melalui menu navigasi sidebar **"Calendar"**, tombol header **"Kalender Cuaca"**, atau kartu quick action hero.
   * Tampilan kalender grid bulanan lengkap dengan navigasi bulan (sebelumnya, berikutnya, dan bulan ini).
-  * Filter kota cepat (Jakarta, Tokyo, London, Los Angeles, Bandung, Surabaya, dll).
+  * Filter kota cepat (Jakarta, Bandung, Surabaya, Yogyakarta, Semarang, Denpasar, Medan, Makassar, dll).
   * Statistik bulanan interaktif: rata-rata suhu maks/min, jumlah hari cerah vs hari hujan, rata-rata peluang hujan, serta saran rekomendasi bulanan.
   * Inspector tanggal terpilih: klik pada tanggal manapun di kalender untuk melihat rincian suhu lengkap, persentase hujan, dan saran aktivitas outdoor yang direkomendasikan.
