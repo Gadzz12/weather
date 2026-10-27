@@ -12,8 +12,8 @@
 
     // Jika sudah di production (bukan localhost), gunakan URL backend production
     // GANTI di bawah ini dengan domain backend hosting Anda, contoh: 'https://api-anda.com'
-    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-      return 'https://backend-anda.com';
+  if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return 'https://go-vibe-backend.hostless.app';
     }
 
     // If opened directly from file system (file://)

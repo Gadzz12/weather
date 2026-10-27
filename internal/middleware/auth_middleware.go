@@ -3,6 +3,7 @@ package middleware
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -19,15 +20,54 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
+// allowedOriginsLoad membaca daftar origin yang diizinkan dari variabel lingkungan ALLOWED_ORIGINS
+// (pisahkan dengan koma). Jika tidak diatur, gunakan default untuk pengembangan local.
+func allowedOrigins() []string {
+	env := os.Getenv("ALLOWED_ORIGINS")
+	defaults := []string{
+		"http://localhost:3000",
+		"http://localhost:8080",
+	}
+	if env == "" {
+		return defaults
+	}
+	var result []string
+	for _, o := range strings.Split(env, ",") {
+		o = strings.TrimSpace(o)
+		if o != "" {
+			result = append(result, o)
+		}
+	}
+	if len(result) == 0 {
+		return defaults
+	}
+	return result
+}
+
+// isOriginAllowed memeriksa apakah origin terdapat dalam daftar yang diizinkan.
+func isOriginAllowed(origin string, allowed []string) bool {
+	for _, o := range allowed {
+		if o == origin {
+			return true
+		}
+	}
+	return false
+}
+
 // CORSMiddleware handles cross-origin resource sharing requests
 func CORSMiddleware() gin.HandlerFunc {
+	allowed := allowedOrigins()
+
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
-		if origin != "" {
+
+		// Hanya set Access-Control-Allow-Origin jika origin cocok dengan daftar yang diizinkan.
+		// Jangan gunakan "*" karena Access-Control-Allow-Credentials diatur ke "true".
+		if origin != "" && isOriginAllowed(origin, allowed) {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-		} else {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+			c.Writer.Header().Set("Vary", "Origin")
 		}
+
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
