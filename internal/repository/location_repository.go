@@ -98,7 +98,7 @@ func (r *locationRepository) seedDefaultLocations() {
 			State:     &stateDIY,
 			Country:   "Indonesia",
 			Latitude:  -7.795562,
-			Longitude: 110.369539,
+			Longitude: 110.369492,
 			ImageURL:  &imgJOG,
 		},
 		{
@@ -106,8 +106,8 @@ func (r *locationRepository) seedDefaultLocations() {
 			City:      "Semarang",
 			State:     &stateJateng,
 			Country:   "Indonesia",
-			Latitude:  -6.993192,
-			Longitude: 110.420399,
+			Latitude:  -6.9932,
+			Longitude: 110.4204,
 			ImageURL:  &imgSMG,
 		},
 		{
@@ -115,8 +115,8 @@ func (r *locationRepository) seedDefaultLocations() {
 			City:      "Denpasar",
 			State:     &stateBali,
 			Country:   "Indonesia",
-			Latitude:  -8.670529,
-			Longitude: 115.212579,
+			Latitude:  -8.670458,
+			Longitude: 115.212629,
 			ImageURL:  &imgDPS,
 		},
 		{
@@ -124,8 +124,8 @@ func (r *locationRepository) seedDefaultLocations() {
 			City:      "Medan",
 			State:     &stateSumut,
 			Country:   "Indonesia",
-			Latitude:  3.595157,
-			Longitude: 98.672225,
+			Latitude:  3.595196,
+			Longitude: 98.672226,
 			ImageURL:  &imgMDN,
 		},
 		{
@@ -134,7 +134,7 @@ func (r *locationRepository) seedDefaultLocations() {
 			State:     &stateSulsel,
 			Country:   "Indonesia",
 			Latitude:  -5.147665,
-			Longitude: 119.432733,
+			Longitude: 119.432732,
 			ImageURL:  &imgMKS,
 		},
 		{
@@ -144,55 +144,19 @@ func (r *locationRepository) seedDefaultLocations() {
 			Country:   "Indonesia",
 			Latitude:  -2.976074,
 			Longitude: 104.775431,
-			ImageURL:  &imgMDN,
+			ImageURL:  &imgJKT,
 		},
 		{
 			ID:        uuid.MustParse("00000000-0000-0000-0000-000000000010"),
 			City:      "Batam",
 			State:     &stateKepri,
 			Country:   "Indonesia",
-			Latitude:  1.129209,
-			Longitude: 104.052902,
-			ImageURL:  &imgJKT,
+			Latitude:  1.1301,
+			Longitude: 104.0529,
+			ImageURL:  &imgMDN,
 		},
 		{
 			ID:        uuid.MustParse("00000000-0000-0000-0000-000000000011"),
-			City:      "Bandar Lampung",
-			State:     &stateLampung,
-			Country:   "Indonesia",
-			Latitude:  -5.4352,
-			Longitude: 105.2594,
-			ImageURL:  &imgBDG,
-		},
-		{
-			ID:        uuid.MustParse("00000000-0000-0000-0000-000000000012"),
-			City:      "Padang",
-			State:     &stateSumbar,
-			Country:   "Indonesia",
-			Latitude:  -0.9471,
-			Longitude: 100.4175,
-			ImageURL:  &imgMDN,
-		},
-		{
-			ID:        uuid.MustParse("00000000-0000-0000-0000-000000000013"),
-			City:      "Pekanbaru",
-			State:     &stateRiau,
-			Country:   "Indonesia",
-			Latitude:  0.5071,
-			Longitude: 101.4478,
-			ImageURL:  &imgMDN,
-		},
-		{
-			ID:        uuid.MustParse("00000000-0000-0000-0000-000000000014"),
-			City:      "Banda Aceh",
-			State:     &stateAceh,
-			Country:   "Indonesia",
-			Latitude:  5.5481,
-			Longitude: 95.3235,
-			ImageURL:  &imgMDN,
-		},
-		{
-			ID:        uuid.MustParse("00000000-0000-0000-0000-000000000015"),
 			City:      "Malang",
 			State:     &stateJatim,
 			Country:   "Indonesia",
@@ -201,7 +165,7 @@ func (r *locationRepository) seedDefaultLocations() {
 			ImageURL:  &imgSBY,
 		},
 		{
-			ID:        uuid.MustParse("00000000-0000-0000-0000-000000000016"),
+			ID:        uuid.MustParse("00000000-0000-0000-0000-000000000012"),
 			City:      "Solo",
 			State:     &stateJateng,
 			Country:   "Indonesia",
@@ -210,13 +174,49 @@ func (r *locationRepository) seedDefaultLocations() {
 			ImageURL:  &imgJOG,
 		},
 		{
-			ID:        uuid.MustParse("00000000-0000-0000-0000-000000000017"),
+			ID:        uuid.MustParse("00000000-0000-0000-0000-000000000013"),
 			City:      "Bogor",
 			State:     &stateJabar,
 			Country:   "Indonesia",
 			Latitude:  -6.5971,
 			Longitude: 106.8060,
 			ImageURL:  &imgBDG,
+		},
+		{
+			ID:        uuid.MustParse("00000000-0000-0000-0000-000000000014"),
+			City:      "Bandar Lampung",
+			State:     &stateLampung,
+			Country:   "Indonesia",
+			Latitude:  -5.4352,
+			Longitude: 105.2594,
+			ImageURL:  &imgJKT,
+		},
+		{
+			ID:        uuid.MustParse("00000000-0000-0000-0000-000000000015"),
+			City:      "Padang",
+			State:     &stateSumbar,
+			Country:   "Indonesia",
+			Latitude:  -0.9471,
+			Longitude: 100.4175,
+			ImageURL:  &imgMDN,
+		},
+		{
+			ID:        uuid.MustParse("00000000-0000-0000-0000-000000000016"),
+			City:      "Pekanbaru",
+			State:     &stateRiau,
+			Country:   "Indonesia",
+			Latitude:  0.5071,
+			Longitude: 101.4478,
+			ImageURL:  &imgMDN,
+		},
+		{
+			ID:        uuid.MustParse("00000000-0000-0000-0000-000000000017"),
+			City:      "Banda Aceh",
+			State:     &stateAceh,
+			Country:   "Indonesia",
+			Latitude:  5.5481,
+			Longitude: 95.3235,
+			ImageURL:  &imgMDN,
 		},
 		{
 			ID:        uuid.MustParse("00000000-0000-0000-0000-000000000018"),
@@ -303,14 +303,29 @@ func (r *locationRepository) seedDefaultLocations() {
 
 	for _, loc := range seeds {
 		r.mockLocations[loc.ID] = loc
+		if r.db != nil {
+			var existing domain.Location
+			if err := r.db.First(&existing, "id = ?", loc.ID).Error; err != nil {
+				_ = r.db.Create(loc).Error
+			}
+		}
 	}
 }
 
 func (r *locationRepository) Search(ctx context.Context, query string) ([]domain.Location, error) {
+	cleanQ := strings.TrimSpace(query)
+	if r.db != nil {
+		var locations []domain.Location
+		err := r.db.WithContext(ctx).Where("city ILIKE ? OR country ILIKE ?", "%"+cleanQ+"%", "%"+cleanQ+"%").Find(&locations).Error
+		if err == nil && len(locations) > 0 {
+			return locations, nil
+		}
+	}
+
 	var results []domain.Location
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	q := strings.ToLower(strings.TrimSpace(query))
+	q := strings.ToLower(cleanQ)
 	for _, loc := range r.mockLocations {
 		cityName := strings.ToLower(loc.City)
 		stateName := ""
@@ -330,6 +345,13 @@ func (r *locationRepository) Search(ctx context.Context, query string) ([]domain
 }
 
 func (r *locationRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.Location, error) {
+	if r.db != nil {
+		var loc domain.Location
+		if err := r.db.WithContext(ctx).First(&loc, "id = ?", id).Error; err == nil {
+			return &loc, nil
+		}
+	}
+
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	if loc, ok := r.mockLocations[id]; ok {
@@ -339,23 +361,50 @@ func (r *locationRepository) FindByID(ctx context.Context, id uuid.UUID) (*domai
 }
 
 func (r *locationRepository) Create(ctx context.Context, location *domain.Location) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
 	if location.ID == uuid.Nil {
 		location.ID = uuid.New()
 	}
-	r.mockLocations[location.ID] = location
+
+	if r.db != nil {
+		if err := r.db.WithContext(ctx).Create(location).Error; err == nil {
+			return nil
+		}
+	}
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	locCopy := *location
+	r.mockLocations[location.ID] = &locCopy
 	return nil
 }
 
 func (r *locationRepository) SaveUserLocation(ctx context.Context, savedLocation *domain.UserSavedLocation) error {
+	if r.db != nil {
+		if err := r.db.WithContext(ctx).Create(savedLocation).Error; err == nil {
+			return nil
+		}
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	r.mockUserLocations[savedLocation.UserID] = append(r.mockUserLocations[savedLocation.UserID], savedLocation)
+	savedCopy := *savedLocation
+	if savedCopy.Location == nil {
+		if loc, exists := r.mockLocations[savedCopy.LocationID]; exists {
+			savedCopy.Location = loc
+		}
+	}
+	r.mockUserLocations[savedLocation.UserID] = append(r.mockUserLocations[savedLocation.UserID], &savedCopy)
 	return nil
 }
 
 func (r *locationRepository) GetUserSavedLocations(ctx context.Context, userID uuid.UUID) ([]domain.UserSavedLocation, error) {
+	if r.db != nil {
+		var list []domain.UserSavedLocation
+		if err := r.db.WithContext(ctx).Preload("Location").Where("user_id = ?", userID).Find(&list).Error; err == nil && len(list) > 0 {
+			return list, nil
+		}
+	}
+
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	ptrSlice := r.mockUserLocations[userID]
@@ -367,17 +416,29 @@ func (r *locationRepository) GetUserSavedLocations(ctx context.Context, userID u
 }
 
 func (r *locationRepository) GetDefaultUserLocation(ctx context.Context, userID uuid.UUID) (*domain.UserSavedLocation, error) {
+	if r.db != nil {
+		var saved domain.UserSavedLocation
+		if err := r.db.WithContext(ctx).Preload("Location").Where("user_id = ? AND is_default = ?", userID, true).First(&saved).Error; err == nil {
+			return &saved, nil
+		}
+	}
+
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	for _, saved := range r.mockUserLocations[userID] {
 		if saved.IsDefault {
-			return saved, nil
+			itCopy := *saved
+			return &itCopy, nil
 		}
 	}
 	return nil, fmt.Errorf("no default location found")
 }
 
 func (r *locationRepository) DeleteUserSavedLocation(ctx context.Context, userID, locationID uuid.UUID) error {
+	if r.db != nil {
+		_ = r.db.WithContext(ctx).Where("user_id = ? AND location_id = ?", userID, locationID).Delete(&domain.UserSavedLocation{}).Error
+	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	locs := r.mockUserLocations[userID]

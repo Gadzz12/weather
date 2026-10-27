@@ -599,7 +599,7 @@ func (u *weatherUsecase) CompareCities(
 			rec.WriteString(fmt.Sprintf("Disarankan menyiapkan payung di %s karena peluang hujan tinggi (%d%%). ", d2.Location.City, r2))
 		}
 	}
-	if strings.Contains(strings.ToLower(d1.CurrentWeather.Condition), "rain") || strings.Contains(strings.ToLower(d2.CurrentWeather.Condition), "rain") {
+	cond1 := strings.ToLower(d1.CurrentWeather.Condition); cond2 := strings.ToLower(d2.CurrentWeather.Condition); if strings.Contains(cond1, "rain") || strings.Contains(cond2, "rain") || strings.Contains(cond1, "hujan") || strings.Contains(cond2, "hujan") {
 		rec.WriteString("Perhatikan kondisi jalanan licin untuk perjalanan antar kota.")
 	} else {
 		rec.WriteString("Kondisi cuaca secara umum kondusif untuk aktivitas luar ruangan.")

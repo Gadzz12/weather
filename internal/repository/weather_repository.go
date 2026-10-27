@@ -20,12 +20,9 @@ type weatherRepository struct {
 }
 
 // NewWeatherRepository creates a new WeatherRepository instance.
-// Defaults to BMKG public API if baseURL is empty.
+// If baseURL is empty, it uses fallback mock data (useful for deterministic tests).
 func NewWeatherRepository(apiKey, baseURL string) domain.WeatherRepository {
 	trimmed := strings.TrimSpace(baseURL)
-	if trimmed == "" {
-		trimmed = "https://api.bmkg.go.id"
-	}
 	return &weatherRepository{
 		apiKey:  apiKey,
 		baseURL: trimmed,
@@ -138,6 +135,36 @@ func (r *weatherRepository) fetchBMKGAPI(ctx context.Context, lat, lon float64) 
 	return &data, nil
 }
 
+// getClosestWeather mengambil data prakiraan BMKG yang paling dekat dengan jam sekarang
+func getClosestWeather(data *bmkgResponse) *bmkgWeather {
+	if data == nil || len(data.Data) == 0 || len(data.Data[0].Cuaca) == 0 {
+		return nil
+	}
+	now := time.Now()
+	var closest *bmkgWeather
+	var minDiff time.Duration = 1<<63 - 1
+
+	for _, dayBlock := range data.Data[0].Cuaca {
+		for i := range dayBlock {
+			w := &dayBlock[i]
+			if t, err := time.Parse("2006-01-02 15:04:05", w.LocalDatetime); err == nil {
+				diff := now.Sub(t)
+				if diff < 0 {
+					diff = -diff
+				}
+				if diff < minDiff {
+					minDiff = diff
+					closest = w
+				}
+			}
+		}
+	}
+	if closest == nil && len(data.Data[0].Cuaca[0]) > 0 {
+		return &data.Data[0].Cuaca[0][0]
+	}
+	return closest
+}
+
 // ==========================================
 // FALLBACK DATA CUACA DAERAH INDONESIA
 // ==========================================
@@ -211,36 +238,48 @@ func (r *weatherRepository) fallbackMultiDayForecast(days int) []domain.DayForec
 
 func (r *weatherRepository) GetRealtimeWeather(ctx context.Context, lat, lon float64) (*domain.CurrentWeather, error) {
 	data, err := r.fetchBMKGAPI(ctx, lat, lon)
-	if err != nil || len(data.Data) == 0 || len(data.Data[0].Cuaca) == 0 {
+	if err != nil {
 		return r.fallbackCurrentWeather(), nil
 	}
 
-	current := data.Data[0].Cuaca[0]
+	closest := getClosestWeather(data)
+	if closest == nil {
+		return r.fallbackCurrentWeather(), nil
+	}
+
 	dateTimeStr := time.Now().Format("Monday, 03:04 PM")
-	if t, parseErr := time.Parse("2006-01-02 15:04:05", current.LocalDatetime); parseErr == nil {
+	if t, parseErr := time.Parse("2006-01-02 15:04:05", closest.LocalDatetime); parseErr == nil {
 		dateTimeStr = t.Format("Monday, 03:04 PM")
 	}
 
 	return &domain.CurrentWeather{
-		Temperature:   current.T,
-		Condition:     current.WeatherDesc,
-		ConditionIcon: current.Image,
+		Temperature:   closest.T,
+		Condition:     closest.WeatherDesc,
+		ConditionIcon: closest.Image,
 		DateTime:      dateTimeStr,
 	}, nil
 }
 
 func (r *weatherRepository) GetHighlights(ctx context.Context, lat, lon float64) (*domain.WeatherHighlights, error) {
 	data, err := r.fetchBMKGAPI(ctx, lat, lon)
-	if err != nil || len(data.Data) == 0 || len(data.Data[0].Cuaca) == 0 {
+	if err != nil {
 		return r.fallbackHighlights(), nil
 	}
 
-	current := data.Data[0].Cuaca[0]
-	humidity := fmt.Sprintf("%d%%", current.Hu)
-	windSpeed := fmt.Sprintf("%.0f km/h", current.Ws)
+	closest := getClosestWeather(data)
+	if closest == nil {
+		return r.fallbackHighlights(), nil
+	}
+
+	humidity := fmt.Sprintf("%d%%", closest.Hu)
+	windSpeed := fmt.Sprintf("%.0f km/h", closest.Ws)
+	precip := fmt.Sprintf("%.1f mm", closest.Tp)
+	if closest.Tp == 0 {
+		precip = fmt.Sprintf("%d%%", closest.Tcc)
+	}
 
 	return &domain.WeatherHighlights{
-		Precipitation: "2%",
+		Precipitation: precip,
 		Humidity:      humidity,
 		WindSpeed:     windSpeed,
 		Sunrise:       "05:45 WIB",
@@ -258,42 +297,59 @@ func (r *weatherRepository) GetHourlyForecast(ctx context.Context, lat, lon floa
 	var hourly []domain.HourlyTemperature
 	var chanceOfRain []domain.ChanceOfRain
 
-	for _, w := range data.Data[0].Cuaca {
-		formattedTime := w.LocalDatetime
-		hourNum := 0
-		if t, err := time.Parse("2006-01-02 15:04:05", w.LocalDatetime); err == nil {
-			formattedTime = strings.ToLower(t.Format("03 pm"))
-			hourNum = t.Hour()
+	for _, dayBlock := range data.Data[0].Cuaca {
+		for _, w := range dayBlock {
+			formattedTime := w.LocalDatetime
+			hourNum := 0
+			if t, err := time.Parse("2006-01-02 15:04:05", w.LocalDatetime); err == nil {
+				formattedTime = strings.ToLower(t.Format("03 pm"))
+				hourNum = t.Hour()
+			}
+
+			tempF := (w.T * 9 / 5) + 32
+
+			hourly = append(hourly, domain.HourlyTemperature{
+				Time:      formattedTime,
+				Hour:      hourNum,
+				Temp:      w.T,
+				TempC:     w.T,
+				TempF:     mathRound(tempF, 1),
+				FeelsLike: w.T,
+				Humidity:  w.Hu,
+				Condition: w.WeatherDesc,
+				Icon:      w.Image,
+			})
+
+			intensity := "Sunny"
+			lowerDesc := strings.ToLower(w.WeatherDesc)
+			if w.Tp >= 5.0 || strings.Contains(lowerDesc, "lebat") || strings.Contains(lowerDesc, "petir") {
+				intensity = "Heavy Rain"
+			} else if w.Tp > 0.0 || strings.Contains(lowerDesc, "hujan") {
+				intensity = "Light Rain"
+			} else if w.Tcc > 50 || strings.Contains(lowerDesc, "berawan") {
+				intensity = "Partly Cloudy"
+			}
+
+			rainPct := w.Hu
+			if w.Tp > 0 {
+				rainPct = int(math.Min(100, 60+w.Tp*8))
+			} else if w.Tcc < 30 {
+				rainPct = int(float64(w.Hu) * 0.2)
+			}
+
+			chanceOfRain = append(chanceOfRain, domain.ChanceOfRain{
+				Time:       formattedTime,
+				Hour:       hourNum,
+				Intensity:  intensity,
+				Percentage: rainPct,
+				PrecipMM:   w.Tp,
+			})
 		}
+	}
 
-		tempF := (w.T * 9 / 5) + 32
-
-		hourly = append(hourly, domain.HourlyTemperature{
-			Time:      formattedTime,
-			Hour:      hourNum,
-			Temp:      w.T,
-			TempC:     w.T,
-			TempF:     mathRound(tempF, 1),
-			FeelsLike: w.T,
-			Humidity:  w.Hu,
-			Condition: w.WeatherDesc,
-			Icon:      w.Image,
-		})
-
-		intensity := "Sunny"
-		if w.Hu > 80 {
-			intensity = "Heavy Rain"
-		} else if w.Hu > 60 {
-			intensity = "Partly Cloudy"
-		}
-
-		chanceOfRain = append(chanceOfRain, domain.ChanceOfRain{
-			Time:       formattedTime,
-			Hour:       hourNum,
-			Intensity:  intensity,
-			Percentage: w.Hu,
-			PrecipMM:   0,
-		})
+	if len(hourly) > 12 {
+		hourly = hourly[:12]
+		chanceOfRain = chanceOfRain[:12]
 	}
 
 	return hourly, chanceOfRain, nil
@@ -301,51 +357,51 @@ func (r *weatherRepository) GetHourlyForecast(ctx context.Context, lat, lon floa
 
 func (r *weatherRepository) GetMultiDayForecast(ctx context.Context, lat, lon float64, days int) ([]domain.DayForecast, error) {
 	data, err := r.fetchBMKGAPI(ctx, lat, lon)
-	if err != nil || len(data.Data) == 0 {
+	if err != nil || len(data.Data) == 0 || len(data.Data[0].Cuaca) == 0 {
 		return r.fallbackMultiDayForecast(days), nil
 	}
 
 	var forecasts []domain.DayForecast
+	totalDays := len(data.Data[0].Cuaca)
 	count := days
-	if count > len(data.Data) {
-		count = len(data.Data)
+	if count > totalDays {
+		count = totalDays
 	}
 
 	for i := 0; i < count; i++ {
-		dayData := data.Data[i]
-		if len(dayData.Cuaca) == 0 {
+		dayCuaca := data.Data[0].Cuaca[i]
+		if len(dayCuaca) == 0 {
 			continue
 		}
 
-		var maxTemp, minTemp float64
-		var condition string
-		var icon string
+		maxTemp := dayCuaca[0].T
+		minTemp := dayCuaca[0].T
+		condition := dayCuaca[0].WeatherDesc
+		icon := dayCuaca[0].Image
+		dateStr := ""
+		dayName := ""
 
-		for j, w := range dayData.Cuaca {
-			if j == 0 {
-				maxTemp = w.T
-				minTemp = w.T
-				condition = w.WeatherDesc
-				icon = w.Image
-			}
+		for _, w := range dayCuaca {
 			if w.T > maxTemp {
 				maxTemp = w.T
 			}
 			if w.T < minTemp {
 				minTemp = w.T
 			}
+			if strings.Contains(w.LocalDatetime, " 12:00:") || strings.Contains(w.LocalDatetime, " 13:00:") || strings.Contains(w.LocalDatetime, " 14:00:") {
+				condition = w.WeatherDesc
+				icon = w.Image
+			}
 		}
 
-		dayName := ""
-		if len(dayData.Cuaca) > 0 {
-			if t, err := time.Parse("2006-01-02 15:04:05", dayData.Cuaca[0].LocalDatetime); err == nil {
-				dayName = t.Format("Monday")
-			}
+		if t, err := time.Parse("2006-01-02 15:04:05", dayCuaca[0].LocalDatetime); err == nil {
+			dayName = translateDayIndonesian(t.Format("Monday"))
+			dateStr = t.Format("2006-01-02")
 		}
 
 		forecasts = append(forecasts, domain.DayForecast{
 			Day:       dayName,
-			Date:      "",
+			Date:      dateStr,
 			Condition: condition,
 			TempHigh:  mathRound(maxTemp, 1),
 			TempLow:   mathRound(minTemp, 1),
@@ -353,11 +409,35 @@ func (r *weatherRepository) GetMultiDayForecast(ctx context.Context, lat, lon fl
 		})
 	}
 
-	if len(forecasts) == 0 {
-		return r.fallbackMultiDayForecast(days), nil
+	if len(forecasts) < days {
+		fallbacks := r.fallbackMultiDayForecast(days)
+		for i := len(forecasts); i < days && i < len(fallbacks); i++ {
+			forecasts = append(forecasts, fallbacks[i])
+		}
 	}
 
 	return forecasts, nil
+}
+
+func translateDayIndonesian(day string) string {
+	switch strings.ToLower(day) {
+	case "sunday":
+		return "Minggu"
+	case "monday":
+		return "Senin"
+	case "tuesday":
+		return "Selasa"
+	case "wednesday":
+		return "Rabu"
+	case "thursday":
+		return "Kamis"
+	case "friday":
+		return "Jumat"
+	case "saturday":
+		return "Sabtu"
+	default:
+		return day
+	}
 }
 
 func mathRound(val float64, precision int) float64 {
@@ -476,7 +556,12 @@ func (r *weatherRepository) GetCalendarForecast(ctx context.Context, city string
 // BMKG API response structures
 type bmkgResponse struct {
 	Lokasi bmkgLocation `json:"lokasi"`
-	Data   []bmkgDay    `json:"data"`
+	Data   []bmkgData   `json:"data"`
+}
+
+type bmkgData struct {
+	Lokasi bmkgLocation  `json:"lokasi"`
+	Cuaca  bmkgCuacaDays `json:"cuaca"`
 }
 
 type bmkgLocation struct {
@@ -488,14 +573,30 @@ type bmkgLocation struct {
 	Timezone  string  `json:"timezone"`
 }
 
-type bmkgDay struct {
-	Cuaca []bmkgWeather `json:"cuaca"`
+type bmkgCuacaDays [][]bmkgWeather
+
+func (b *bmkgCuacaDays) UnmarshalJSON(data []byte) error {
+	var list2D [][]bmkgWeather
+	if err := json.Unmarshal(data, &list2D); err == nil {
+		*b = list2D
+		return nil
+	}
+	var list1D []bmkgWeather
+	if err := json.Unmarshal(data, &list1D); err == nil {
+		*b = [][]bmkgWeather{list1D}
+		return nil
+	}
+	return fmt.Errorf("unable to unmarshal cuaca as 1D or 2D array")
 }
 
 type bmkgWeather struct {
+	Datetime      string  `json:"datetime"`
 	LocalDatetime string  `json:"local_datetime"`
 	WeatherDesc   string  `json:"weather_desc"`
+	WeatherDescEn string  `json:"weather_desc_en"`
 	T             float64 `json:"t"`
+	Tcc           int     `json:"tcc"`
+	Tp            float64 `json:"tp"`
 	Hu            int     `json:"hu"`
 	Ws            float64 `json:"ws"`
 	Wd            string  `json:"wd"`
