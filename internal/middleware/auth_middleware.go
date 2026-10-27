@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -50,32 +52,38 @@ func isOriginAllowed(origin string, allowed []string) bool {
 	return false
 }
 
-// CORSMiddleware handles cross-origin resource sharing requests
+// CORSMiddleware handles cross-origin resource sharing requests using github.com/gin-contrib/cors
 func CORSMiddleware() gin.HandlerFunc {
+	env := strings.TrimSpace(os.Getenv("ALLOWED_ORIGINS"))
 	allowed := allowedOrigins()
 
-	return func(c *gin.Context) {
-		origin := c.Request.Header.Get("Origin")
-
-		// Hanya set Access-Control-Allow-Origin jika origin cocok dengan daftar yang diizinkan.
-		// Jangan gunakan "*" karena Access-Control-Allow-Credentials diatur ke "true".
-		if origin != "" && isOriginAllowed(origin, allowed) {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-			c.Writer.Header().Set("Vary", "Origin")
-		}
-
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
-		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
-
-		if c.Request.Method == http.MethodOptions {
-			c.AbortWithStatus(http.StatusNoContent)
-			return
-		}
-
-		c.Next()
+	corsConfig := cors.Config{
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders: []string{
+			"Origin",
+			"Content-Type",
+			"Content-Length",
+			"Accept-Encoding",
+			"X-CSRF-Token",
+			"Authorization",
+			"Accept",
+			"Cache-Control",
+			"X-Requested-With",
+		},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           24 * time.Hour,
 	}
+
+	if env == "" || env == "*" || isOriginAllowed("*", allowed) {
+		corsConfig.AllowOriginFunc = func(origin string) bool {
+			return true
+		}
+	} else {
+		corsConfig.AllowOrigins = allowed
+	}
+
+	return cors.New(corsConfig)
 }
 
 // ParseJWTToken parses and validates a JWT token string
