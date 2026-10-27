@@ -24,17 +24,25 @@ func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
 
-		// Mengambil origin browser (misal https://weather.hostless.app) agar kompatibel dengan credentials
-		if origin != "" {
+		// Mengambil origin browser (misal http://localhost:5500, http://127.0.0.1:5500, https://...)
+		if origin != "" && origin != "null" {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		} else {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		}
 
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		// Mengizinkan header yang diminta oleh preflight browser secara dinamis
+		reqHeaders := c.Request.Header.Get("Access-Control-Request-Headers")
+		if reqHeaders != "" {
+			c.Writer.Header().Set("Access-Control-Allow-Headers", reqHeaders)
+		} else {
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		}
+
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, PATCH, DELETE, HEAD")
 		c.Writer.Header().Set("Access-Control-Expose-Headers", "Content-Length, Authorization")
+		c.Writer.Header().Set("Access-Control-Max-Age", "86400")
 
 		// Preflight OPTIONS langsung dihentikan dengan status 204 No Content
 		if c.Request.Method == http.MethodOptions {
